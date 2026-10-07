@@ -1,0 +1,1060 @@
+<!doctype html><html><head>
+<script src="login-gate.js" data-app="Gudang Material"></script>
+<meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Gudang Material</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: pita rambu proyek di atas, tab sticky, dashboard proyek dulu lalu stok dan transaksi.
+   Warna: abu beton berona hijau, aksen biru cetak biru, jingga karat untuk arus keluar, kuning-hitam hanya pada pita. */
+:root{
+  --bg:#ECEDE8; --surface:#F8F8F5; --surface2:#E3E5DE; --ink:#1A2126; --ink2:#56616A; --line:#CCD0C8;
+  --accent:#1D4F73; --accent-ink:#FFFFFF; --accent-soft:#D6E4EE; --bar2:#B5651F;
+  --ok:#2A7048; --ok-bg:#DAEADF; --warn:#8F5600; --warn-bg:#F5E2B8; --bad:#A02E27; --bad-bg:#F3D5D1;
+  --stripe-a:#E6B91E; --stripe-b:#1A2126;
+  --f-disp:'Barlow Condensed','Arial Narrow',sans-serif; --f-body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171B; --surface:#1A2126; --surface2:#242D33; --ink:#E6E9E4; --ink2:#9CA7AF; --line:#333E45;
+    --accent:#72B2DE; --accent-ink:#0E1A22; --accent-soft:#1F3342; --bar2:#E3A365;
+    --ok:#6CC08C; --ok-bg:#1C3326; --warn:#E3B35A; --warn-bg:#3A2D12; --bad:#F08A80; --bad-bg:#3C1E1B;
+    --stripe-a:#D2A81C; --stripe-b:#0B0F12; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171B; --surface:#1A2126; --surface2:#242D33; --ink:#E6E9E4; --ink2:#9CA7AF; --line:#333E45;
+  --accent:#72B2DE; --accent-ink:#0E1A22; --accent-soft:#1F3342; --bar2:#E3A365;
+  --ok:#6CC08C; --ok-bg:#1C3326; --warn:#E3B35A; --warn-bg:#3A2D12; --bad:#F08A80; --bad-bg:#3C1E1B;
+  --stripe-a:#D2A81C; --stripe-b:#0B0F12; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;padding-inline:16px;padding-block:0 72px;color:var(--ink);font:15px/1.45 var(--f-body);background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:700;letter-spacing:.01em;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1040px;margin-inline:auto}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink2)}
+.stripe{height:8px;margin-inline:-16px;background:repeating-linear-gradient(-45deg,var(--stripe-a) 0 10px,var(--stripe-b) 10px 20px)}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:18px 14px}
+.head h1{font-size:34px;line-height:1}
+.head .sub{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-top:4px}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:2px;margin-inline:-16px;padding-inline:16px;overflow-x:auto;background:var(--bg);border-bottom:1px solid var(--line)}
+.tab{flex:none;min-height:46px;padding:0 14px;border:0;border-bottom:3px solid transparent;background:none;color:var(--ink2);font:600 19px var(--f-disp);letter-spacing:.02em;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 16px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--ink2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.sm{min-height:34px;padding:0 11px;font-size:14px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:var(--bad);background:transparent}
+.btn[disabled]{opacity:.55;cursor:default}
+.link{padding:0;border:0;background:none;font-weight:600;font-size:16px;text-align:left;cursor:pointer;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.link:hover{text-decoration-color:var(--accent)}
+#view{padding-block:8px 0}
+.pad{padding:24px 0}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 12px;margin:26px 0 10px}
+.sec-h h2{font-size:24px}
+.list{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.list>*+*{border-top:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;margin-top:14px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--line)}
+.stat{background:var(--surface);padding:12px 14px;min-width:0}
+.stat .l{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.stat .v{font:700 34px/1.1 var(--f-disp);margin-top:2px}
+.stat .v.alert{color:var(--bad)}
+.pill{display:inline-block;padding:2px 8px;border-radius:4px;font:600 13px/1.4 var(--f-disp);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.pill.aman,.pill.masuk,.pill.berjalan{background:var(--ok-bg);color:var(--ok)}
+.pill.menipis,.pill.opname{background:var(--warn-bg);color:var(--warn)}
+.pill.habis{background:var(--bad-bg);color:var(--bad)}
+.pill.keluar,.pill.selesai{background:var(--surface2);color:var(--ink2)}
+.pill.bim{background:var(--accent-soft);color:var(--accent)}
+.bar{position:relative;height:8px;border-radius:2px;background:var(--surface2);min-width:90px}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:var(--ok)}
+.bar.menipis i{background:var(--warn)}
+.bar.habis i{background:var(--bad)}
+.bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.7}
+.prog{position:relative;height:8px;border-radius:2px;background:var(--surface2);min-width:60px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+.prog.ok i{background:var(--ok)}.prog.warn i{background:var(--warn)}.prog.bad i{background:var(--bad)}
+.need{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 14px}
+.need .bar{grid-column:1/2}
+.need .go{grid-column:2;grid-row:1/3;align-self:center}
+.meta{font-size:13px;color:var(--ink2);overflow-wrap:anywhere}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-block:6px 14px}
+.toolbar .grow{flex:1 1 220px;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{min-height:40px;padding:0 12px;border:0;border-right:1px solid var(--line);background:none;font-weight:600;font-size:14px;cursor:pointer;color:var(--ink2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.field{display:grid;gap:5px;min-width:0}
+.field>span,.lbl{font-size:13px;font-weight:600;letter-spacing:.03em;color:var(--ink2)}
+input[type=text],input[type=date],input[type=search],input[type=file],select,textarea{width:100%;min-height:42px;padding:8px 11px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+textarea{min-height:64px;resize:vertical}
+.srow{display:grid;gap:8px 12px;padding:12px 14px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"main status" "qty qty" "bar bar" "act act"}
+.s-main{grid-area:main;min-width:0}.s-qty{grid-area:qty}.s-bar{grid-area:bar}.s-status{grid-area:status}.s-act{grid-area:act;display:flex;flex-wrap:wrap;gap:8px}
+.s-qty .num{font-size:21px;font-weight:500}
+.s-qty .unit{color:var(--ink2)}
+.s-qty .min{font-size:12.5px;color:var(--ink2)}
+@media (min-width:760px){
+  .srow{grid-template-columns:minmax(0,2.4fr) 120px minmax(110px,1fr) 92px auto;grid-template-areas:"main qty bar status act";align-items:center}
+}
+.dayh{padding:8px 14px;background:var(--surface2);font:600 15px var(--f-disp);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.trow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;padding:11px 14px;align-items:start}
+.trow .q{font:500 17px var(--f-mono);text-align:right;white-space:nowrap}
+.trow .q.in{color:var(--ok)}.trow .q.adj{color:var(--warn)}
+.trow .nm{font-weight:600;overflow-wrap:anywhere}
+.trow .u{grid-column:3;justify-self:end}
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{padding:6px 10px;text-align:left;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right;white-space:nowrap}
+.tbl td.over{color:var(--bad);font-weight:600}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 20px}
+.cols>*{min-width:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.pcard{display:grid;gap:8px;align-content:start;padding:14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);text-align:left;cursor:pointer;min-width:0}
+.pcard:hover{border-color:var(--ink2)}
+.pc-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pc-h .nm{font:700 21px/1.15 var(--f-disp)}
+.pc-h .kode{font-size:12px;color:var(--ink2);white-space:nowrap}
+.pc-r{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink2)}
+.pc-r b{color:var(--ink);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:2px 8px;border-radius:4px;font-size:12.5px;font-weight:600;background:var(--surface2);color:var(--ink2)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.bim{background:var(--accent-soft);color:var(--accent)}.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink2);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.chart-box{padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.chart{width:100%;max-width:560px;height:auto;display:block}
+.chart text{fill:var(--ink2);font:11px var(--f-mono)}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .b1{fill:var(--accent)}.chart .b2{fill:var(--bar2)}
+.proj>summary{list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:13px 14px;cursor:pointer}
+.proj>summary::-webkit-details-marker{display:none}
+.proj .nm{font:700 21px/1.15 var(--f-disp)}
+.proj .tot{font:500 16px var(--f-mono);text-align:right}
+.proj[open]>summary{border-bottom:1px solid var(--line)}
+.proj .body{padding:12px 14px 14px;display:grid;gap:14px}
+.proj .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px}
+.proj .info .l{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.proj .info .v{font-weight:500;overflow-wrap:anywhere}
+.proj .acts{display:flex;flex-wrap:wrap;gap:8px}
+.wlist{border:1px solid var(--line);border-radius:6px}
+.wlist>*+*{border-top:1px solid var(--line)}
+.wr>summary{list-style:none;display:grid;gap:6px 12px;padding:10px 12px;cursor:pointer;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"k n b" "p p p"}
+.wr>summary::-webkit-details-marker{display:none}
+.wr .wk{grid-area:k;font-weight:500}.wr .wn{grid-area:n;font-weight:600;min-width:0;overflow-wrap:anywhere}.wr .wb{grid-area:b}.wr .wp{grid-area:p;display:flex;align-items:center;gap:10px}
+.wr .wp .prog{flex:1}
+@media (min-width:760px){.wr>summary{grid-template-columns:70px minmax(0,1fr) 190px 96px;grid-template-areas:"k n p b";align-items:center}}
+.wr .wbody{padding:4px 12px 12px;display:grid;gap:10px}
+.kb{display:grid;grid-template-columns:minmax(0,1fr) 96px auto;gap:8px;align-items:center}
+.banner{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;margin-top:14px;padding:11px 14px;border:1px solid var(--line);border-radius:6px;background:var(--accent-soft)}
+.empty{padding:34px 18px;text-align:center;display:grid;gap:12px;justify-items:center}
+.empty h3{font-size:24px}.empty p{max-width:44ch;color:var(--ink2)}
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(10,14,17,.55)}
+.sheet{position:fixed;z-index:21;left:50%;bottom:0;transform:translateX(-50%);width:min(620px,100%);max-height:92vh;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px 10px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (min-width:700px){.sheet{top:50%;bottom:auto;transform:translate(-50%,-50%);border-radius:10px;max-height:88vh}}
+.sheet>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sheet>header h2{font-size:26px}
+.sheet .x{width:40px;height:40px;border:0;border-radius:6px;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--ink2)}
+.sheet-body{padding:16px;overflow-y:auto;display:grid;gap:14px;align-content:start}
+.sheet-body form{display:grid;gap:14px}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.preview{padding:9px 12px;border-radius:6px;background:var(--surface2);font-size:14px}
+.preview.warn{background:var(--warn-bg);color:var(--warn)}
+.err{color:var(--bad);font-weight:600;min-height:1.2em;font-size:14px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+#toast{position:fixed;z-index:30;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(92vw,460px);padding:10px 16px;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:no-preference){.sheet,.scrim{animation:fade .14s ease-out}@keyframes fade{from{opacity:0}to{opacity:1}}}
+</style>
+
+<div class="stripe" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <h1>Gudang Material</h1>
+      <div class="sub">Stok, proyek, dan WBS terhubung ke model BIM</div>
+    </div>
+    <button class="btn primary" type="button" data-act="tx" data-type="masuk">+ Catat transaksi</button>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Menu gudang">
+    <button class="tab" role="tab" data-act="tab" data-tab="ringkasan" aria-selected="true">Dashboard</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="stok" aria-selected="false">Stok</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="transaksi" aria-selected="false">Transaksi</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="proyek" aria-selected="false">Proyek &amp; WBS</button>
+  </nav>
+  <main id="view"><p class="muted pad">Memuat data gudang…</p></main>
+</div>
+<div id="sheet-root"></div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+var SEED={"items": {"itm-bsi16": {"contoh": true, "harga": 186000, "kategori": "Besi & Baja", "kode": "BSI-016", "min": 80, "nama": "Besi Ulir D16 × 12 m", "rak": "B-1", "satuan": "batang", "stokAwal": 160}, "itm-kyu2": {"contoh": true, "harga": 48000, "kategori": "Kayu & Bekisting", "kode": "KYU-002", "min": 60, "nama": "Kaso 5/7 × 4 m", "rak": "D-2", "satuan": "batang", "stokAwal": 150}, "itm-kyu1": {"contoh": true, "harga": 235000, "kategori": "Kayu & Bekisting", "kode": "KYU-001", "min": 30, "nama": "Multipleks 12 mm 122×244", "rak": "D-1", "satuan": "lembar", "stokAwal": 100}, "itm-lst1": {"contoh": true, "harga": 1250000, "kategori": "Listrik", "kode": "LST-001", "min": 3, "nama": "Kabel NYM 3×2,5 mm (roll 50 m)", "rak": "G-2", "satuan": "roll", "stokAwal": 12}, "itm-bsi8": {"contoh": true, "harga": 52000, "kategori": "Besi & Baja", "kode": "BSI-008", "min": 100, "nama": "Besi Polos Ø8 × 12 m", "rak": "B-2", "satuan": "batang", "stokAwal": 300}, "itm-smn2": {"contoh": true, "harga": 112000, "kategori": "Semen & Perekat", "kode": "SMN-002", "min": 20, "nama": "Perekat Keramik 25 kg", "rak": "A-2", "satuan": "sak", "stokAwal": 80}, "itm-cat1": {"contoh": true, "harga": 560000, "kategori": "Cat", "kode": "CAT-001", "min": 6, "nama": "Cat Dasar Tembok 20 kg", "rak": "E-1", "satuan": "pail", "stokAwal": 20}, "itm-agr2": {"contoh": true, "harga": 340000, "kategori": "Agregat", "kode": "AGR-002", "min": 10, "nama": "Batu Split 2/3", "rak": "Halaman", "satuan": "m³", "stokAwal": 40}, "itm-bsi13": {"contoh": true, "harga": 118000, "kategori": "Besi & Baja", "kode": "BSI-013", "min": 150, "nama": "Besi Ulir D13 × 12 m", "rak": "B-1", "satuan": "batang", "stokAwal": 400}, "itm-brg": {"contoh": true, "harga": 11500, "kategori": "Dinding", "kode": "BTR-001", "min": 400, "nama": "Bata Ringan 60×20×10", "rak": "C-2", "satuan": "bh", "stokAwal": 2200}, "itm-agr1": {"contoh": true, "harga": 285000, "kategori": "Agregat", "kode": "AGR-001", "min": 10, "nama": "Pasir Pasang", "rak": "Halaman", "satuan": "m³", "stokAwal": 30}, "itm-kwt": {"contoh": true, "harga": 21000, "kategori": "Besi & Baja", "kode": "KWT-001", "min": 30, "nama": "Kawat Bendrat", "rak": "B-3", "satuan": "kg", "stokAwal": 25}, "itm-smn1": {"contoh": true, "harga": 68000, "kategori": "Semen & Perekat", "kode": "SMN-001", "min": 100, "nama": "Semen Portland 40 kg", "rak": "A-1", "satuan": "sak", "stokAwal": 200}}, "projects": {"p1": {"anggaran": 650000000, "contoh": true, "ifcFile": "Ruko_Melati_STR.ifc", "ifcSync": 1790910000000, "klien": "PT Melati Properti", "kode": "RKO-MLT", "lokasi": "Jl. Melati Raya No. 14, Jakarta Timur", "nama": "Ruko 3 Lantai Jl. Melati", "pj": "Ir. Bambang S.", "status": "berjalan", "tglMulai": "2026-08-17", "tglTarget": "2027-02-26"}, "p2": {"anggaran": 320000000, "contoh": true, "klien": "Bpk. Hartono", "kode": "RTH-HTN", "lokasi": "Cluster Alam Asri Blok C-7, Bekasi", "nama": "Rumah Tinggal Bpk. Hartono", "pj": "Ir. Dewi R.", "status": "berjalan", "tglMulai": "2026-09-14", "tglTarget": "2027-01-30"}, "p4": {"anggaran": 90000000, "contoh": true, "klien": "PT Nusa Sentosa", "kode": "KTR-CBG", "lokasi": "Jl. Raya Bekasi KM 21, Jakarta Timur", "nama": "Renovasi Kantor Cabang", "pj": "Ir. Bambang S.", "status": "selesai", "tglMulai": "2026-08-24", "tglTarget": "2026-09-20"}, "p3": {"anggaran": 1200000000, "contoh": true, "ifcFile": "Gudang_CKR_STR.ifc", "ifcSync": 1791169200000, "klien": "PT Cikarang Logistik", "kode": "GDG-CKR", "lokasi": "Kawasan Industri MM2100, Cikarang", "nama": "Gudang Pabrik Cikarang", "pj": "Ir. Slamet W.", "status": "berjalan", "tglMulai": "2026-09-28", "tglTarget": "2027-03-31"}}, "wbs": {"p2-2_2": {"contoh": true, "kebutuhan": [{"itemId": "itm-smn1", "qty": 150}, {"itemId": "itm-agr1", "qty": 10}], "kode": "2.2", "nama": "Plesteran & Acian Lt.1", "proyekId": "p2"}, "p1-1_4": {"contoh": true, "kebutuhan": [{"itemId": "itm-smn1", "qty": 180}, {"itemId": "itm-bsi13", "qty": 300}, {"itemId": "itm-bsi16", "qty": 120}, {"itemId": "itm-kyu1", "qty": 70}], "kode": "1.4", "nama": "Pelat Lantai 2", "proyekId": "p1"}, "p4-4_1": {"contoh": true, "kebutuhan": [{"itemId": "itm-smn1", "qty": 30}], "kode": "4.1", "nama": "Pembongkaran & Perbaikan Lantai", "proyekId": "p4"}, "p3-3_2": {"contoh": true, "kebutuhan": [{"itemId": "itm-bsi13", "qty": 200}, {"itemId": "itm-smn1", "qty": 150}, {"itemId": "itm-agr2", "qty": 30}], "kode": "3.2", "nama": "Sloof & Lantai Kerja", "proyekId": "p3"}, "p4-4_2": {"contoh": true, "kebutuhan": [{"itemId": "itm-kyu2", "qty": 25}, {"itemId": "itm-bsi8", "qty": 40}], "kode": "4.2", "nama": "Plafon & Pengecatan", "proyekId": "p4"}, "p1-1_2": {"bim": {"berat": 0, "elemen": 12, "file": "Ruko_Melati_STR.ifc", "guids": [], "luas": 0, "panjang": 0, "sinkron": 1790910000000, "sumber": "prop:WBS", "tipe": {"IFCFOOTING": 12}, "volume": 17.28}, "contoh": true, "kebutuhan": [{"itemId": "itm-smn1", "qty": 80}, {"itemId": "itm-bsi13", "qty": 150}, {"itemId": "itm-bsi8", "qty": 60}, {"itemId": "itm-agr1", "qty": 12}, {"itemId": "itm-agr2", "qty": 20}], "kode": "1.2", "nama": "Pondasi Telapak", "proyekId": "p1"}, "p2-2_3": {"contoh": true, "kebutuhan": [{"itemId": "itm-lst1", "qty": 4}], "kode": "2.3", "nama": "Instalasi Listrik Lt.1", "proyekId": "p2"}, "p2-2_4": {"contoh": true, "kebutuhan": [{"itemId": "itm-cat1", "qty": 24}], "kode": "2.4", "nama": "Pengecatan Dasar", "proyekId": "p2"}, "p3-3_1": {"bim": {"berat": 0, "elemen": 24, "file": "Gudang_CKR_STR.ifc", "guids": [], "luas": 0, "panjang": 0, "sinkron": 1791169200000, "sumber": "prop:WBS", "tipe": {"IFCFOOTING": 8, "IFCPILE": 16}, "volume": 62.4}, "contoh": true, "kebutuhan": [{"itemId": "itm-smn1", "qty": 200}, {"itemId": "itm-bsi16", "qty": 160}, {"itemId": "itm-bsi13", "qty": 300}, {"itemId": "itm-agr1", "qty": 40}, {"itemId": "itm-agr2", "qty": 25}], "kode": "3.1", "nama": "Pondasi Tiang & Pile Cap", "proyekId": "p3"}, "p1-1_1": {"contoh": true, "kebutuhan": [{"itemId": "itm-kyu2", "qty": 80}], "kode": "1.1", "nama": "Persiapan & Bowplank", "proyekId": "p1"}, "p1-1_3": {"bim": {"berat": 0, "elemen": 18, "file": "Ruko_Melati_STR.ifc", "guids": [], "luas": 0, "panjang": 70.8, "sinkron": 1790910000000, "sumber": "prop:WBS", "tipe": {"IFCBEAM": 10, "IFCCOLUMN": 8}, "volume": 6.6}, "contoh": true, "kebutuhan": [{"itemId": "itm-smn1", "qty": 120}, {"itemId": "itm-bsi13", "qty": 250}, {"itemId": "itm-bsi16", "qty": 150}, {"itemId": "itm-bsi8", "qty": 120}, {"itemId": "itm-kyu1", "qty": 60}, {"itemId": "itm-kwt", "qty": 25}], "kode": "1.3", "nama": "Sloof & Kolom Lantai 1", "proyekId": "p1"}, "p2-2_1": {"contoh": true, "kebutuhan": [{"itemId": "itm-brg", "qty": 1800}, {"itemId": "itm-smn2", "qty": 60}], "kode": "2.1", "nama": "Dinding Bata Ringan Lt.1", "proyekId": "p2"}}, "movements": {"m23": {"catatan": "", "contoh": true, "delta": -60, "harga": 118000, "itemId": "itm-bsi13", "jenis": "keluar", "noDok": "BON-0226", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-06", "ts": 1791260400000, "wbs": "1.2"}, "m02": {"catatan": "", "contoh": true, "delta": -90, "harga": 68000, "itemId": "itm-smn1", "jenis": "keluar", "noDok": "BON-0211", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-02", "ts": 1790911800000, "wbs": "1.2"}, "m13": {"catatan": "", "contoh": true, "delta": -38, "harga": 285000, "itemId": "itm-agr1", "jenis": "keluar", "noDok": "BON-0217", "petugas": "Rudi", "pihak": "Pak Slamet", "proyekId": "p3", "tanggal": "2026-10-05", "ts": 1791162000000, "wbs": "3.1"}, "m25": {"catatan": "", "contoh": true, "delta": -30, "harga": 68000, "itemId": "itm-smn1", "jenis": "keluar", "noDok": "BON-0188", "petugas": "Rudi", "pihak": "Pak Eko", "proyekId": "p4", "tanggal": "2026-09-12", "ts": 1789178400000, "wbs": "4.1"}, "m16": {"catatan": "", "contoh": true, "delta": -52, "harga": 235000, "itemId": "itm-kyu1", "jenis": "keluar", "noDok": "BON-0210", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-02", "ts": 1790913600000, "wbs": "1.3"}, "m14": {"catatan": "", "contoh": true, "delta": -18, "harga": 340000, "itemId": "itm-agr2", "jenis": "keluar", "noDok": "BON-0212", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-04", "ts": 1791077400000, "wbs": "1.2"}, "m26": {"catatan": "", "contoh": true, "delta": -25, "harga": 48000, "itemId": "itm-kyu2", "jenis": "keluar", "noDok": "BON-0184", "petugas": "Rudi", "pihak": "Pak Eko", "proyekId": "p4", "tanggal": "2026-09-10", "ts": 1789009200000, "wbs": "4.2"}, "m07": {"catatan": "", "contoh": true, "delta": -220, "harga": 118000, "itemId": "itm-bsi13", "jenis": "keluar", "noDok": "BON-0214", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-03", "ts": 1790990100000, "wbs": "1.3"}, "m19": {"catatan": "", "contoh": true, "delta": -16, "harga": 560000, "itemId": "itm-cat1", "jenis": "keluar", "noDok": "BON-0225", "petugas": "Rudi", "pihak": "Pak Hasan", "proyekId": "p2", "tanggal": "2026-10-06", "ts": 1791270000000, "wbs": "2.4"}, "m27": {"catatan": "", "contoh": true, "delta": -40, "harga": 52000, "itemId": "itm-bsi8", "jenis": "keluar", "noDok": "BON-0191", "petugas": "Rudi", "pihak": "Pak Eko", "proyekId": "p4", "tanggal": "2026-09-15", "ts": 1789435800000, "wbs": "4.2"}, "m11": {"catatan": "", "contoh": true, "delta": -120, "harga": 52000, "itemId": "itm-bsi8", "jenis": "keluar", "noDok": "BON-0216", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-04", "ts": 1791082800000, "wbs": "1.3"}, "m15": {"catatan": "", "contoh": true, "delta": -1100, "harga": 11500, "itemId": "itm-brg", "jenis": "keluar", "noDok": "BON-0224", "petugas": "Rudi", "pihak": "Pak Hasan", "proyekId": "p2", "tanggal": "2026-10-06", "ts": 1791256500000, "wbs": "2.1"}, "m09": {"catatan": "", "contoh": true, "delta": -100, "harga": 186000, "itemId": "itm-bsi16", "jenis": "keluar", "noDok": "BON-0215", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-03", "ts": 1790990400000, "wbs": "1.3"}, "m03": {"catatan": "", "contoh": true, "delta": -120, "harga": 68000, "itemId": "itm-smn1", "jenis": "keluar", "noDok": "BON-0219", "petugas": "Rudi", "pihak": "Pak Slamet", "proyekId": "p3", "tanggal": "2026-10-05", "ts": 1791164400000, "wbs": "3.1"}, "m12": {"catatan": "", "contoh": true, "delta": 20, "harga": 285000, "itemId": "itm-agr1", "jenis": "masuk", "noDok": "SJ-221", "petugas": "Rudi", "pihak": "UD Pasir Bogor", "proyekId": "", "tanggal": "2026-10-03", "ts": 1790988300000, "wbs": ""}, "m24": {"catatan": "", "contoh": true, "delta": -25, "harga": 21000, "itemId": "itm-kwt", "jenis": "keluar", "noDok": "BON-0215B", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-04", "ts": 1791100800000, "wbs": "1.3"}, "m17": {"catatan": "", "contoh": true, "delta": 100, "harga": 48000, "itemId": "itm-kyu2", "jenis": "masuk", "noDok": "SJ-882", "petugas": "Rudi", "pihak": "TB Kayu Utama", "proyekId": "", "tanggal": "2026-10-04", "ts": 1791081000000, "wbs": ""}, "m10": {"catatan": "", "contoh": true, "delta": -60, "harga": 186000, "itemId": "itm-bsi16", "jenis": "keluar", "noDok": "BON-0218", "petugas": "Rudi", "pihak": "Pak Slamet", "proyekId": "p3", "tanggal": "2026-10-05", "ts": 1791166200000, "wbs": "3.1"}, "m08": {"catatan": "", "contoh": true, "delta": -180, "harga": 118000, "itemId": "itm-bsi13", "jenis": "keluar", "noDok": "BON-0222", "petugas": "Rudi", "pihak": "Pak Slamet", "proyekId": "p3", "tanggal": "2026-10-06", "ts": 1791251400000, "wbs": "3.1"}, "m21": {"catatan": "", "contoh": true, "delta": 120, "harga": 68000, "itemId": "itm-smn1", "jenis": "masuk", "noDok": "SJ-4488", "petugas": "Rudi", "pihak": "TB Sinar Jaya", "proyekId": "", "tanggal": "2026-10-07", "ts": 1791328500000, "wbs": ""}, "m18": {"catatan": "", "contoh": true, "delta": -75, "harga": 48000, "itemId": "itm-kyu2", "jenis": "keluar", "noDok": "BON-0221", "petugas": "Rudi", "pihak": "Pak Darto", "proyekId": "p1", "tanggal": "2026-10-05", "ts": 1791168300000, "wbs": "1.1"}, "m05": {"catatan": "", "contoh": true, "delta": -32, "harga": 112000, "itemId": "itm-smn2", "jenis": "keluar", "noDok": "BON-0220", "petugas": "Rudi", "pihak": "Pak Hasan", "proyekId": "p2", "tanggal": "2026-10-05", "ts": 1791181200000, "wbs": "2.1"}, "m01": {"catatan": "", "contoh": true, "delta": 150, "harga": 68000, "itemId": "itm-smn1", "jenis": "masuk", "noDok": "SJ-4471", "petugas": "Rudi", "pihak": "TB Sinar Jaya", "proyekId": "", "tanggal": "2026-10-02", "ts": 1790903400000, "wbs": ""}, "m04": {"catatan": "", "contoh": true, "delta": -60, "harga": 68000, "itemId": "itm-smn1", "jenis": "keluar", "noDok": "BON-0223", "petugas": "Rudi", "pihak": "Pak Hasan", "proyekId": "p2", "tanggal": "2026-10-06", "ts": 1791252300000, "wbs": "2.2"}, "m22": {"catatan": "", "contoh": true, "delta": 50, "harga": 186000, "itemId": "itm-bsi16", "jenis": "masuk", "noDok": "SJ-0991", "petugas": "Rudi", "pihak": "CV Baja Mandiri", "proyekId": "", "tanggal": "2026-10-07", "ts": 1791330000000, "wbs": ""}, "m06": {"catatan": "", "contoh": true, "delta": 300, "harga": 118000, "itemId": "itm-bsi13", "jenis": "masuk", "noDok": "SJ-0983", "petugas": "Rudi", "pihak": "CV Baja Mandiri", "proyekId": "", "tanggal": "2026-10-01", "ts": 1790820000000, "wbs": ""}, "m20": {"catatan": "", "contoh": true, "delta": -6, "harga": 1250000, "itemId": "itm-lst1", "jenis": "keluar", "noDok": "BON-0213", "petugas": "Rudi", "pihak": "Pak Hasan", "proyekId": "p2", "tanggal": "2026-10-04", "ts": 1791093600000, "wbs": "2.3"}}},KEY='gudang-material-contoh-v1',D;
+try{D=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!D)D=SEED;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+var subs={};
+function fire(c){(subs[c]||[]).forEach(function(f){f(snap(c))})}
+function snap(c){var o=D[c]||{};return{docs:Object.keys(o).map(function(id){return{id:id,data:function(){return JSON.parse(JSON.stringify(o[id]))}}})}}
+function sp(p){var a=p.split('/');return[a[0],a[1]]}
+function docRef(c,id){return{id:id,get:async function(){var d=(D[c]||{})[id];return{id:id,exists:!!d,data:function(){return d}}},
+set:async function(v){(D[c]=D[c]||{})[id]=v;save();fire(c)},
+update:async function(v){D[c]=D[c]||{};D[c][id]=Object.assign({},D[c][id],v);save();fire(c)},
+delete:async function(){delete (D[c]||{})[id];save();fire(c)}}}
+var db={collection:function(c){return{
+onSnapshot:function(f,e){(subs[c]=subs[c]||[]).push(f);setTimeout(function(){f(snap(c))},0);return function(){subs[c]=subs[c].filter(function(x){return x!==f})}},
+add:async function(v){var id=c.slice(0,3)+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await docRef(c,id).set(v);return{id:id}},
+doc:function(id){return docRef(c,id)}}},
+doc:function(p){var s=sp(p);return docRef(s[0],s[1])}};
+var user={can:function(){return true},isOwner:function(){return true},canEdit:function(){return true},id:async function(){return'lokal'},me:async function(){return{id:'lokal',name:'Pengguna'}}};
+window.claude={use:async function(n){return n==='db'?db:n==='user'?user:null}};
+window.__resetContoh=function(){try{localStorage.removeItem(KEY)}catch(e){}location.reload()};
+})();
+</script>
+<script>
+(function(){
+'use strict';
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf=new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+const nf0=new Intl.NumberFormat('id-ID',{maximumFractionDigits:0});
+const nfc=new Intl.NumberFormat('id-ID',{notation:'compact',maximumFractionDigits:1});
+const num=n=>nf.format(n||0);
+const rp=n=>'Rp '+nf0.format(Math.round(n||0));
+const rpc=n=>'Rp '+nfc.format(n||0);
+const r2=x=>Math.round(x*100)/100;
+const z2=n=>String(n).padStart(2,'0');
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate())};
+const dateOf=s=>{const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+const strOf=d=>d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate());
+const fmtDate=s=>{if(!s)return '-';const t=dateOf(s).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return s===todayStr()?'Hari ini · '+t:t};
+const fmtShort=s=>s?dateOf(s).toLocaleDateString('id-ID',{day:'numeric',month:'short'}):'-';
+const fmtLong=s=>s?dateOf(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';
+const fmtTime=ts=>ts?new Date(ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
+const parseNum=v=>{let s=String(v==null?'':v).trim();if(s==='')return NaN;if(/,/.test(s))s=s.replace(/\./g,'').replace(',','.');if(!/^-?\d*\.?\d+$/.test(s))return NaN;return Number(s)};
+const lsGet=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const nat=(a,b)=>String(a).localeCompare(String(b),'id',{numeric:true});
+const wk=(p,w)=>p+'|'+String(w||'').trim().toLowerCase();
+
+const S={items:[],projects:[],wbs:[],moves:[],ready:{items:false,projects:false,wbs:false,movements:false},tab:'ringkasan',built:'',q:'',status:'semua',cat:'',stProj:'',txType:'semua',txProj:'',txLimit:60,db:null,canWrite:true,offline:false,openProj:{},openWbs:{},ifc:null};
+const CATS=['Semen & Perekat','Besi & Baja','Agregat','Dinding','Kayu & Bekisting','Keramik & Finishing','Cat','Plumbing','Listrik','K3 / APD','Alat & Habis Pakai'];
+const UNITS=['sak','batang','lembar','m³','kg','bh','dus','roll','liter','pail','ikat','meter'];
+const TYPE_LABEL={masuk:'Masuk',keluar:'Keluar',opname:'Opname'};
+const STATUS_LABEL={aman:'Aman',menipis:'Menipis',habis:'Habis'};
+
+/* ================= perhitungan ================= */
+const cmpMove=(a,b)=>String(a.tanggal||'').localeCompare(String(b.tanggal||''))||((a.ts||0)-(b.ts||0));
+function compute(){
+  const stock=new Map(),byId=new Map(),pById=new Map(),wById=new Map();
+  S.items.forEach(i=>{byId.set(i.id,i);stock.set(i.id,Number(i.stokAwal)||0)});
+  S.projects.forEach(p=>pById.set(p.id,p));
+  S.wbs.forEach(w=>wById.set(w.id,w));
+  const actW=new Map(),wbsNilai=new Map(),projNilai=new Map();
+  S.moves.forEach(m=>{
+    if(stock.has(m.itemId))stock.set(m.itemId,r2(stock.get(m.itemId)+(Number(m.delta)||0)));
+    if(m.jenis!=='keluar')return;
+    const q=Math.abs(Number(m.delta)||0),v=q*(Number(m.harga)||0);
+    projNilai.set(m.proyekId,(projNilai.get(m.proyekId)||0)+v);
+    if(m.wbs){
+      const k=wk(m.proyekId,m.wbs);
+      let mm=actW.get(k);if(!mm){mm=new Map();actW.set(k,mm)}
+      mm.set(m.itemId,(mm.get(m.itemId)||0)+q);
+      wbsNilai.set(k,(wbsNilai.get(k)||0)+v);
+    }
+  });
+  const wbsBy=new Map();
+  S.wbs.slice().sort((a,b)=>nat(a.kode,b.kode)).forEach(w=>{let a=wbsBy.get(w.proyekId);if(!a){a=[];wbsBy.set(w.proyekId,a)}a.push(w)});
+  return {stock,byId,pById,wById,actW,wbsNilai,projNilai,wbsBy,moves:S.moves.slice().sort(cmpMove)};
+}
+function statusOf(i,s){const min=Number(i.min)||0;if(s<=0)return 'habis';if(s<=min)return 'menipis';return 'aman'}
+function wbsInfo(C,w){
+  const am=C.actW.get(wk(w.proyekId,w.kode))||new Map(),lines=[],seen={};
+  let plan=0,pj=0,over=0;
+  (w.kebutuhan||[]).forEach(k=>{
+    const it=C.byId.get(k.itemId);if(!it)return;
+    const a=am.get(k.itemId)||0,h=Number(it.harga)||0,q=Number(k.qty)||0;
+    seen[k.itemId]=1;plan+=q*h;pj+=Math.min(a,q)*h;if(a>q)over++;
+    lines.push({it,plan:q,act:a});
+  });
+  am.forEach((a,id)=>{if(seen[id])return;const it=C.byId.get(id);if(!it)return;lines.push({it,plan:0,act:a});over++});
+  return {lines,plan,pj,over,real:C.wbsNilai.get(wk(w.proyekId,w.kode))||0,pct:plan>0?Math.round(pj/plan*100):null};
+}
+function projInfo(C,p){
+  const list=C.wbsBy.get(p.id)||[],infos=list.map(w=>wbsInfo(C,w));
+  let plan=0,pj=0,overWbs=0,bim=0;
+  infos.forEach((x,i)=>{plan+=x.plan;pj+=x.pj;if(x.over)overWbs++;if(list[i].bim)bim++});
+  const real=C.projNilai.get(p.id)||0,ang=Number(p.anggaran)||0;
+  let last='';C.moves.forEach(m=>{if(m.jenis==='keluar'&&m.proyekId===p.id&&m.tanggal>last)last=m.tanggal});
+  return {list,infos,plan,real,anggaran:ang,pct:plan>0?Math.round(pj/plan*100):null,budPct:ang>0?Math.round(real/ang*100):null,overWbs,bim,nWbs:list.length,last};
+}
+function shortages(C){
+  const need=new Map();
+  S.projects.filter(p=>p.status!=='selesai').forEach(p=>(C.wbsBy.get(p.id)||[]).forEach(w=>{
+    const am=C.actW.get(wk(w.proyekId,w.kode))||new Map();
+    (w.kebutuhan||[]).forEach(k=>{const rem=Math.max(0,(Number(k.qty)||0)-(am.get(k.itemId)||0));if(rem>0)need.set(k.itemId,(need.get(k.itemId)||0)+rem)});
+  }));
+  const out=[];
+  need.forEach((rem,id)=>{const it=C.byId.get(id);if(!it)return;const s=C.stock.get(id)||0;if(rem>s)out.push({it,rem,s,kurang:r2(rem-s)})});
+  return out.sort((a,b)=>b.kurang*(Number(b.it.harga)||0)-a.kurang*(Number(a.it.harga)||0));
+}
+function overruns(C){
+  const out=[];
+  S.projects.filter(p=>p.status!=='selesai').forEach(p=>(C.wbsBy.get(p.id)||[]).forEach(w=>{
+    wbsInfo(C,w).lines.forEach(l=>{if(l.act>l.plan)out.push({p,w,it:l.it,plan:l.plan,act:l.act,ratio:l.plan>0?l.act/l.plan:99})});
+  }));
+  return out.sort((a,b)=>b.ratio-a.ratio);
+}
+const prog=(pct,cls)=>'<div class="prog '+(cls||'')+'" role="img" aria-label="'+Math.round(pct)+' persen"><i style="width:'+Math.max(0,Math.min(100,pct))+'%"></i></div>';
+function barHTML(i,s,st){const min=Number(i.min)||0;const top=Math.max(min*2,1);const pct=Math.max(0,Math.min(100,s/top*100));return '<div class="bar '+st+'" role="img" aria-label="Stok '+num(s)+', minimum '+num(min)+'"><i style="width:'+pct+'%"></i><u style="left:50%"></u></div>'}
+function moveDesc(m,C){
+  if(m.jenis==='masuk')return 'Dari '+esc(m.pihak||'pemasok')+(m.noDok?' · SJ '+esc(m.noDok):'');
+  if(m.jenis==='keluar'){const p=C.pById.get(m.proyekId);return 'Ke '+esc(p?p.nama:'pemakaian umum')+(m.wbs?' · WBS '+esc(m.wbs):'')+(m.pihak?' · '+esc(m.pihak):'')+(m.noDok?' · Bon '+esc(m.noDok):'')}
+  return 'Opname stok'+(m.catatan?' · '+esc(m.catatan):'');
+}
+
+/* ================= render ================= */
+let raf=0;
+const scheduleRender=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render()})};
+function render(){
+  const v=$('#view');
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)));
+  if(S.offline){v.innerHTML='<div class="empty"><h3>Penyimpanan belum tersedia</h3><p>Halaman ini menyimpan data gudang di claude.ai. Buka dari akun Anda di claude.ai untuk mencatat dan melihat stok.</p></div>';S.built='';return}
+  if(S.err){v.innerHTML='<div class="empty"><h3>Data tidak bisa dimuat</h3><p>Akses ke data gudang ditutup atau sedang bermasalah. Muat ulang halaman ini.</p></div>';S.built='';return}
+  if(!(S.ready.items&&S.ready.projects&&S.ready.wbs&&S.ready.movements)){v.innerHTML='<p class="muted pad">Memuat data gudang…</p>';S.built='';return}
+  const C=compute();
+  if(S.tab==='ringkasan'){S.built='';v.innerHTML=viewDashboard(C)}
+  else if(S.tab==='stok'){
+    if(S.built!=='stok'){v.innerHTML=toolbarStok(C)+'<div id="stockList"></div>';S.built='stok'}
+    $('#stockList').innerHTML=stockListHTML(C);
+  }else if(S.tab==='transaksi'){
+    if(S.built!=='transaksi'){v.innerHTML=toolbarTrx(C)+'<div id="trxList"></div>';S.built='transaksi'}
+    $('#trxList').innerHTML=trxListHTML(C);
+  }else{S.built='';v.innerHTML=viewProyek(C)}
+}
+
+/* ---------- dashboard ---------- */
+function flowChart(C){
+  const days=[];const t=new Date();t.setHours(12,0,0,0);
+  for(let k=6;k>=0;k--){const d=new Date(t);d.setDate(d.getDate()-k);days.push(strOf(d))}
+  const inn={},out={};days.forEach(d=>{inn[d]=0;out[d]=0});
+  C.moves.forEach(m=>{if(!(m.tanggal in inn))return;const v=Math.abs(Number(m.delta)||0)*(Number(m.harga)||0);if(m.jenis==='masuk')inn[m.tanggal]+=v;else if(m.jenis==='keluar')out[m.tanggal]+=v});
+  let max=0;days.forEach(d=>{max=Math.max(max,inn[d],out[d])});
+  if(max<=0)return '<p class="muted" style="padding:18px 0">Belum ada arus material dalam 7 hari terakhir.</p>';
+  const mag=Math.pow(10,Math.floor(Math.log10(max)));let top=Math.ceil(max/mag*2)/2*mag;if(top<max)top+=mag/2;
+  const W=360,H=190,L=44,R=6,T=10,B=26,pw=W-L-R,ph=H-T-B,gw=pw/days.length,bw=Math.min(14,gw*.34);
+  const y=v=>T+ph-v/top*ph;
+  let s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Nilai barang masuk dan keluar 7 hari terakhir">';
+  [0,.5,1].forEach(f=>{const v=top*f,yy=y(v);s+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'"/><text x="'+(L-6)+'" y="'+(yy+4)+'" text-anchor="end">'+(v===0?'0':nfc.format(v))+'</text>'});
+  days.forEach((d,k)=>{
+    const cx=L+gw*k+gw/2,a=inn[d],b=out[d];
+    if(a>0)s+='<rect class="b1" x="'+(cx-bw-1)+'" y="'+y(a)+'" width="'+bw+'" height="'+(T+ph-y(a))+'" rx="1.5"/>';
+    if(b>0)s+='<rect class="b2" x="'+(cx+1)+'" y="'+y(b)+'" width="'+bw+'" height="'+(T+ph-y(b))+'" rx="1.5"/>';
+    const p=d.split('-');s+='<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle">'+Number(p[2])+'/'+Number(p[1])+'</text>';
+  });
+  return s+'</svg>';
+}
+function pCard(C,p){
+  const pi=projInfo(C,p);
+  const bc=pi.budPct==null?'':(pi.budPct>100?'bad':(pi.budPct>85?'warn':'ok'));
+  let chips='';
+  if(pi.overWbs)chips+='<span class="chip warn">'+pi.overWbs+' WBS melebihi rencana</span>';
+  if(pi.nWbs)chips+='<span class="chip bim">BIM '+pi.bim+'/'+pi.nWbs+' WBS</span>';
+  if(!pi.nWbs)chips+='<span class="chip">Belum ada WBS</span>';
+  return '<button class="pcard" type="button" data-act="open-proj" data-id="'+esc(p.id)+'"><div class="pc-h"><span class="nm">'+esc(p.nama)+'</span><span class="kode mono">'+esc(p.kode||'')+'</span></div>'
+   +'<div class="meta">'+esc(p.lokasi||'Lokasi belum diisi')+(p.tglTarget?' · target '+esc(fmtLong(p.tglTarget)):'')+'</div>'
+   +'<div class="pc-r"><span>Material terpakai vs rencana WBS</span><b class="num">'+(pi.pct==null?'–':pi.pct+'%')+'</b></div>'+prog(pi.pct||0)
+   +'<div class="pc-r"><span>Anggaran material</span><b class="num">'+rpc(pi.real)+' / '+(pi.anggaran?rpc(pi.anggaran):'–')+'</b></div>'+prog(Math.min(100,pi.budPct||0),bc)
+   +'<div class="chips">'+chips+'</div></button>';
+}
+function viewDashboard(C){
+  const items=S.items;
+  if(!items.length&&!S.projects.length)return emptyItems();
+  const need=[];let value=0;
+  items.forEach(i=>{const s=C.stock.get(i.id),st=statusOf(i,s);if(st!=='aman')need.push({i,s,st});if(s>0)value+=s*(Number(i.harga)||0)});
+  need.sort((a,b)=>(a.s/(Number(a.i.min)||1))-(b.s/(Number(b.i.min)||1)));
+  const today=todayStr();const wkAgo=new Date();wkAgo.setDate(wkAgo.getDate()-6);const from=strOf(wkAgo);
+  let out7=0,nToday=0;
+  S.moves.forEach(m=>{if(m.tanggal===today)nToday++;if(m.jenis==='keluar'&&m.tanggal>=from)out7+=Math.abs(Number(m.delta)||0)*(Number(m.harga)||0)});
+  const active=S.projects.filter(p=>p.status!=='selesai').sort((a,b)=>nat(a.nama,b.nama));
+  const short=shortages(C),over=overruns(C);
+  let h='<div class="stats">'
+   +'<div class="stat"><div class="l">Proyek berjalan</div><div class="v">'+active.length+'</div></div>'
+   +'<div class="stat"><div class="l">Perlu dipesan</div><div class="v'+(need.length?' alert':'')+'">'+nf0.format(need.length)+'</div></div>'
+   +'<div class="stat"><div class="l">Nilai persediaan</div><div class="v">'+rpc(value)+'</div></div>'
+   +'<div class="stat"><div class="l">Keluar 7 hari</div><div class="v">'+rpc(out7)+'</div></div>'
+   +'<div class="stat"><div class="l">Transaksi hari ini</div><div class="v">'+nf0.format(nToday)+'</div></div></div>';
+  if(items.some(i=>i.contoh)||S.moves.some(m=>m.contoh)||S.projects.some(p=>p.contoh)){
+    h+='<div class="banner"><span>Data yang tampil adalah contoh. Hapus kapan saja, lalu mulai dengan proyek dan material Anda sendiri.</span><button class="btn sm" type="button" data-act="clear-sample">Hapus data contoh</button></div>';
+  }
+  h+='<div class="sec-h"><h2>Proyek berjalan</h2><button class="btn sm" type="button" data-act="proj-new">+ Proyek</button></div>';
+  h+=active.length?'<div class="pgrid">'+active.map(p=>pCard(C,p)).join('')+'</div>':'<div class="list"><p class="pad" style="padding-inline:14px">Belum ada proyek berjalan. Tambahkan proyek untuk melacak pemakaian material per WBS.</p></div>';
+  h+='<div class="sec-h"><h2>Arus material 7 hari</h2><span class="meta">Nilai dalam rupiah</span></div><div class="cols"><div><div class="chart-box"><div class="legend"><span><i style="background:var(--accent)"></i>Masuk</span><span><i style="background:var(--bar2)"></i>Keluar</span></div>'+flowChart(C)+'</div></div>';
+  h+='<div><div class="list" style="margin-top:0">';
+  if(!short.length)h+='<p class="pad" style="padding-inline:14px">Stok gudang cukup untuk sisa rencana semua proyek berjalan.</p>';
+  else h+='<div class="dayh">Stok kurang untuk sisa rencana WBS</div>'+short.slice(0,6).map(x=>'<div class="need"><div style="min-width:0"><button class="link" type="button" data-act="kartu" data-id="'+esc(x.it.id)+'">'+esc(x.it.nama)+'</button><div class="meta">Butuh <b class="num">'+num(x.rem)+'</b> '+esc(x.it.satuan)+' · stok <span class="num">'+num(x.s)+'</span> · kurang <b class="num">'+num(x.kurang)+'</b></div></div><button class="btn sm go" type="button" data-act="tx" data-type="masuk" data-item="'+esc(x.it.id)+'">Terima</button></div>').join('');
+  h+='</div></div></div>';
+  h+='<div class="sec-h"><h2>Pemakaian melebihi rencana</h2><span class="meta">Dibanding kebutuhan material tiap WBS</span></div>';
+  if(!over.length)h+='<div class="list"><p class="pad" style="padding-inline:14px">Tidak ada WBS yang melebihi rencana material.</p></div>';
+  else h+='<div class="list"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Proyek · WBS</th><th>Material</th><th class="r">Rencana</th><th class="r">Terpakai</th><th class="r">Selisih</th></tr></thead><tbody>'+over.slice(0,6).map(x=>'<tr><td>'+esc(x.p.kode||x.p.nama)+' · <span class="mono">'+esc(x.w.kode)+'</span></td><td>'+esc(x.it.nama)+'</td><td class="r num">'+num(x.plan)+'</td><td class="r num">'+num(x.act)+'</td><td class="r num over">+'+num(r2(x.act-x.plan))+' '+esc(x.it.satuan)+'</td></tr>').join('')+'</tbody></table></div></div>';
+  h+='<div class="sec-h"><h2>Perlu dipesan</h2><span class="meta">Garis tegak pada batang menandai stok minimum</span></div>';
+  if(!need.length)h+='<div class="list"><p class="pad" style="padding-inline:14px">Semua material masih di atas stok minimum.</p></div>';
+  else{
+    h+='<div class="list">'+need.slice(0,8).map(n=>{const i=n.i;
+      return '<div class="need"><div style="min-width:0"><button class="link" type="button" data-act="kartu" data-id="'+esc(i.id)+'">'+esc(i.nama)+'</button> <span class="pill '+n.st+'">'+STATUS_LABEL[n.st]+'</span>'
+        +'<div class="meta">Sisa <b class="num">'+num(n.s)+'</b> '+esc(i.satuan)+' · minimum <span class="num">'+num(i.min)+'</span> · '+esc(i.kode)+'</div></div>'
+        +'<button class="btn sm go" type="button" data-act="tx" data-type="masuk" data-item="'+esc(i.id)+'">Terima barang</button>'
+        +barHTML(i,n.s,n.st)+'</div>'}).join('')+'</div>';
+    if(need.length>8)h+='<p class="meta" style="margin-top:8px">Dan '+(need.length-8)+' material lain. Lihat di tab Stok.</p>';
+  }
+  h+='<div class="sec-h"><h2>Aktivitas terbaru</h2><button class="btn sm ghost" type="button" data-act="tab" data-tab="transaksi">Semua transaksi</button></div>';
+  const recent=C.moves.slice().reverse().slice(0,6);
+  h+=recent.length?'<div class="list">'+recent.map(m=>trxRow(m,C,false)).join('')+'</div>':'<div class="list"><p class="pad" style="padding-inline:14px">Belum ada transaksi.</p></div>';
+  return h;
+}
+function emptyItems(){
+  return '<div class="empty"><h3>Gudang masih kosong</h3><p>Tambahkan material pertama, misalnya semen, besi ulir, atau pasir, lalu catat barang masuk dan keluar per proyek.</p><button class="btn primary" type="button" data-act="item-new">+ Material baru</button></div>';
+}
+
+/* ---------- stok ---------- */
+function toolbarStok(C){
+  const cats=CATS.slice();S.items.forEach(i=>{if(i.kategori&&cats.indexOf(i.kategori)<0)cats.push(i.kategori)});
+  const used=S.items.reduce((a,i)=>{a[i.kategori]=1;return a},{});
+  const opts='<option value="">Semua kategori</option>'+cats.filter(c=>used[c]).map(c=>'<option'+(S.cat===c?' selected':'')+'>'+esc(c)+'</option>').join('');
+  const seg=[['semua','Semua'],['perlu','Perlu dipesan'],['habis','Habis']].map(x=>'<button type="button" data-act="stfilter" data-v="'+x[0]+'" aria-pressed="'+(S.status===x[0])+'">'+x[1]+'</button>').join('');
+  return '<div class="toolbar"><div class="grow"><input id="q" type="search" placeholder="Cari kode, nama, atau rak" aria-label="Cari material" value="'+esc(S.q)+'"></div>'
+    +'<div class="seg" role="group" aria-label="Filter stok">'+seg+'</div>'
+    +'<select id="catSel" aria-label="Kategori" style="width:auto;min-width:160px">'+opts+'</select>'
+    +'<select id="stProjSel" aria-label="Proyek" style="width:auto;min-width:180px"><option value="">Semua proyek</option>'+S.projects.slice().sort((a,b)=>nat(a.nama,b.nama)).map(p=>'<option value="'+esc(p.id)+'"'+(S.stProj===p.id?' selected':'')+'>'+esc(p.nama)+'</option>').join('')+'</select>'
+    +'<button class="btn sm" type="button" data-act="item-new">+ Material</button></div>';
+}
+function stockListHTML(C){
+  if(!S.items.length)return emptyItems();
+  const q=S.q.trim().toLowerCase();
+  const PJ=S.projects.some(p=>p.id===S.stProj)?S.stProj:'';
+  const pPlan=new Map(),pAct=new Map();
+  if(PJ){
+    (C.wbsBy.get(PJ)||[]).forEach(w=>(w.kebutuhan||[]).forEach(k=>pPlan.set(k.itemId,(pPlan.get(k.itemId)||0)+(Number(k.qty)||0))));
+    C.moves.forEach(m=>{if(m.jenis==='keluar'&&m.proyekId===PJ)pAct.set(m.itemId,(pAct.get(m.itemId)||0)+Math.abs(Number(m.delta)||0))});
+  }
+  const rows=S.items.filter(i=>{
+    const s=C.stock.get(i.id),st=statusOf(i,s);
+    if(PJ&&!pPlan.has(i.id)&&!pAct.has(i.id))return false;
+    if(S.status==='perlu'&&st==='aman')return false;
+    if(S.status==='habis'&&st!=='habis')return false;
+    if(S.cat&&i.kategori!==S.cat)return false;
+    if(q&&(i.kode+' '+i.nama+' '+i.kategori+' '+i.rak).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  }).sort((a,b)=>nat(a.kode,b.kode));
+  if(!rows.length)return '<div class="list"><p class="pad" style="padding-inline:14px">'+(PJ?'Tidak ada material yang cocok. Material muncul di sini bila ada di rencana WBS proyek ini atau sudah pernah keluar ke proyek ini.':'Tidak ada material yang cocok dengan filter ini.')+'</p></div>';
+  return '<div class="list">'+rows.map(i=>{
+    const s=C.stock.get(i.id),st=statusOf(i,s);
+    let pj='';
+    if(PJ){const pl=pPlan.get(i.id)||0,ac=pAct.get(i.id)||0,sisa=r2(pl-ac);
+      pj='<div class="min" style="margin-top:2px">Proyek: rencana <b class="num">'+num(pl)+'</b> · terpakai <b class="num">'+num(ac)+'</b> · '+(sisa<0?'<span style="color:var(--bad)">lebih '+num(-sisa)+'</span>':'sisa <b class="num">'+num(sisa)+'</b>')+(sisa>s?' · <span style="color:var(--warn)">stok kurang '+num(r2(sisa-s))+'</span>':'')+'</div>'}
+    return '<article class="srow">'
+     +'<div class="s-main"><button class="link" type="button" data-act="kartu" data-id="'+esc(i.id)+'">'+esc(i.nama)+'</button><div class="meta"><span class="mono">'+esc(i.kode)+'</span> · '+esc(i.kategori)+(i.rak?' · Rak '+esc(i.rak):'')+'</div></div>'
+     +'<div class="s-qty"><span class="num">'+num(s)+'</span> <span class="unit">'+esc(i.satuan)+'</span><div class="min">minimum '+num(i.min)+' · '+rp(i.harga)+'/'+esc(i.satuan)+'</div>'+pj+'</div>'
+     +'<div class="s-bar">'+barHTML(i,s,st)+'</div>'
+     +'<div class="s-status"><span class="pill '+st+'">'+STATUS_LABEL[st]+'</span></div>'
+     +'<div class="s-act"><button class="btn sm" type="button" data-act="tx" data-type="masuk" data-item="'+esc(i.id)+'">Masuk</button><button class="btn sm" type="button" data-act="tx" data-type="keluar" data-item="'+esc(i.id)+'" data-proj="'+esc(PJ)+'">Keluar</button><button class="btn sm ghost" type="button" data-act="item-edit" data-id="'+esc(i.id)+'">Ubah</button></div>'
+     +'</article>'}).join('')+'</div>';
+}
+
+/* ---------- transaksi ---------- */
+function toolbarTrx(C){
+  const seg=[['semua','Semua'],['masuk','Masuk'],['keluar','Keluar'],['opname','Opname']].map(x=>'<button type="button" data-act="txfilter" data-v="'+x[0]+'" aria-pressed="'+(S.txType===x[0])+'">'+x[1]+'</button>').join('');
+  const popts='<option value="">Semua proyek</option>'+S.projects.slice().sort((a,b)=>nat(a.nama,b.nama)).map(p=>'<option value="'+esc(p.id)+'"'+(S.txProj===p.id?' selected':'')+'>'+esc(p.nama)+'</option>').join('');
+  return '<div class="toolbar"><div class="seg" role="group" aria-label="Jenis transaksi">'+seg+'</div><select id="projSel" aria-label="Proyek" style="width:auto;min-width:180px">'+popts+'</select></div>';
+}
+function trxRow(m,C,undo){
+  const it=C.byId.get(m.itemId);const d=Number(m.delta)||0;
+  const sign=d>0?'+':(d<0?'−':'±');
+  const cls=m.jenis==='masuk'?'in':(m.jenis==='opname'?'adj':'');
+  return '<div class="trow"><span class="pill '+m.jenis+'">'+TYPE_LABEL[m.jenis]+'</span>'
+    +'<div style="min-width:0"><div class="nm">'+esc(it?it.nama:'Material dihapus')+'</div><div class="meta">'+moveDesc(m,C)+' · '+fmtTime(m.ts)+(m.petugas?' · '+esc(m.petugas):'')+'</div></div>'
+    +'<div class="q '+cls+'">'+sign+num(Math.abs(d))+' <span class="muted" style="font:400 13px var(--f-body)">'+esc(it?it.satuan:'')+'</span></div>'
+    +(undo&&S.canWrite?'<button class="btn sm ghost u" type="button" data-act="undo" data-id="'+esc(m.id)+'">Batalkan</button>':'')+'</div>';
+}
+function trxListHTML(C){
+  const rows=C.moves.slice().reverse().filter(m=>{
+    if(S.txType!=='semua'&&m.jenis!==S.txType)return false;
+    if(S.txProj&&m.proyekId!==S.txProj)return false;
+    return true;
+  });
+  if(!rows.length)return '<div class="list"><p class="pad" style="padding-inline:14px">Belum ada transaksi untuk filter ini.</p></div>';
+  const shown=rows.slice(0,S.txLimit);let h='<div class="list">',day='';
+  shown.forEach(m=>{if(m.tanggal!==day){day=m.tanggal;h+='<div class="dayh">'+esc(fmtDate(day))+'</div>'}h+=trxRow(m,C,true)});
+  h+='</div>';
+  if(rows.length>shown.length)h+='<p style="margin-top:12px"><button class="btn" type="button" data-act="more">Tampilkan lebih banyak ('+(rows.length-shown.length)+')</button></p>';
+  return h;
+}
+
+/* ---------- proyek & WBS ---------- */
+function bimBadge(w){return w.bim?'<span class="pill bim">BIM · '+nf0.format(w.bim.elemen||0)+'</span>':'<span class="muted">–</span>'}
+function wbsRow(C,w){
+  const inf=wbsInfo(C,w);
+  const prow=inf.pct==null?'<span class="meta">Belum ada rencana material</span>':prog(inf.pct,inf.over?'warn':'ok')+'<b class="num">'+inf.pct+'%</b>';
+  let body='';
+  if(inf.lines.length)body+='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Material</th><th class="r">Rencana</th><th class="r">Terpakai</th><th class="r">Sisa</th></tr></thead><tbody>'+inf.lines.map(l=>{
+    const sisa=r2(l.plan-l.act);return '<tr><td>'+esc(l.it.nama)+'</td><td class="r num">'+num(l.plan)+' '+esc(l.it.satuan)+'</td><td class="r num">'+num(l.act)+'</td><td class="r num'+(sisa<0?' over':'')+'">'+(sisa<0?'+'+num(-sisa)+' lebih':num(sisa))+'</td></tr>'}).join('')+'</tbody></table></div>';
+  else body+='<p class="meta">Belum ada kebutuhan material. Tambahkan lewat tombol Ubah WBS.</p>';
+  if(w.bim){
+    const b=w.bim,tipe=Object.keys(b.tipe||{}).map(k=>esc(TYPE_NAME[k]||k)+' ×'+b.tipe[k]).join(', ');
+    const q=[];if(b.volume)q.push('volume '+num(b.volume)+' m³');if(b.luas)q.push('luas '+num(b.luas)+' m²');if(b.panjang)q.push('panjang '+num(b.panjang)+' m');if(b.berat)q.push('berat '+num(b.berat)+' kg');
+    body+='<div class="preview"><b>Model BIM:</b> '+nf0.format(b.elemen||0)+' elemen'+(tipe?' ('+tipe+')':'')+(q.length?' · '+q.join(' · '):'')+'<div class="meta">Sumber '+esc(b.file||'IFC')+(b.sinkron?' · disinkron '+esc(fmtLong(strOf(new Date(b.sinkron)))):'')+'</div></div>';
+  }
+  body+='<div class="acts"><button class="btn sm" type="button" data-act="wbs-edit" data-id="'+esc(w.id)+'">Ubah WBS</button><button class="btn sm ghost" type="button" data-act="tx" data-type="keluar" data-proj="'+esc(w.proyekId)+'" data-wbs="'+esc(w.kode)+'">Catat barang keluar</button></div>';
+  return '<details class="wr" data-wid="'+esc(w.id)+'"'+(S.openWbs[w.id]?' open':'')+'><summary><span class="mono wk">'+esc(w.kode)+'</span><span class="wn">'+esc(w.nama)+'</span><span class="wp">'+prow+'</span><span class="wb">'+bimBadge(w)+'</span></summary><div class="wbody">'+body+'</div></details>';
+}
+function viewProyek(C){
+  const head='<div class="sec-h" style="margin-top:8px"><h2>Proyek &amp; WBS</h2><button class="btn sm" type="button" data-act="proj-new">+ Proyek</button></div>';
+  if(!S.projects.length)return head+'<div class="empty"><h3>Belum ada proyek</h3><p>Tambahkan proyek, susun WBS-nya, lalu catat setiap pengeluaran material ke WBS yang dikerjakan. WBS id yang sama dipakai untuk menautkan model IFC.</p><button class="btn primary" type="button" data-act="proj-new">+ Proyek baru</button></div>';
+  const list=S.projects.slice().sort((a,b)=>(a.status===b.status?0:(a.status==='berjalan'?-1:1))||nat(a.nama,b.nama));
+  return head+'<div class="list">'+list.map(p=>{
+    const pi=projInfo(C,p),done=p.status==='selesai';
+    const info=[['Klien',p.klien],['Penanggung jawab',p.pj],['Periode',(p.tglMulai?fmtLong(p.tglMulai):'-')+' s.d. '+(p.tglTarget?fmtLong(p.tglTarget):'-')],['Anggaran material',p.anggaran?rp(p.anggaran):'-'],['Rencana WBS',pi.plan?rp(pi.plan):'-'],['Terpakai',rp(pi.real)+(pi.budPct!=null?' ('+pi.budPct+'%)':'')]]
+      .map(x=>'<div><div class="l">'+x[0]+'</div><div class="v">'+esc(x[1]||'-')+'</div></div>').join('');
+    const wrows=pi.list.length?'<div class="wlist">'+pi.list.map(w=>wbsRow(C,w)).join('')+'</div>':'<p class="meta">Belum ada WBS. Tambahkan secara manual atau impor dari model IFC.</p>';
+    return '<details class="proj" data-pid="'+esc(p.id)+'"'+(S.openProj[p.id]?' open':'')+'><summary><div style="min-width:0"><div class="nm">'+esc(p.nama)+'</div><div class="meta"><span class="mono">'+esc(p.kode||'')+'</span>'+(p.kode?' · ':'')+esc(p.lokasi||'Lokasi belum diisi')+(pi.last?' · terakhir ambil '+esc(fmtShort(pi.last)):'')+'</div></div><div><div class="tot">'+rpc(pi.real)+'</div><div style="text-align:right"><span class="pill '+(done?'selesai':'berjalan')+'">'+(done?'Selesai':'Berjalan')+'</span></div></div></summary>'
+      +'<div class="body"><div class="info">'+info+'</div>'
+      +'<div class="acts"><button class="btn sm" type="button" data-act="wbs-new" data-pid="'+esc(p.id)+'">+ WBS</button><button class="btn sm" type="button" data-act="ifc" data-pid="'+esc(p.id)+'">Impor model IFC</button><button class="btn sm ghost" type="button" data-act="csv" data-pid="'+esc(p.id)+'">Salin CSV per WBS</button><button class="btn sm ghost" type="button" data-act="proj-edit" data-id="'+esc(p.id)+'">Ubah proyek</button></div>'
+      +(p.ifcFile?'<p class="meta">Model terakhir: '+esc(p.ifcFile)+(p.ifcSync?' · '+esc(fmtLong(strOf(new Date(p.ifcSync)))):'')+'</p>':'')
+      +wrows+'</div></details>'}).join('')+'</div>';
+}
+
+/* ================= lembar (sheet) ================= */
+const sheetRoot=$('#sheet-root');let lastFocus=null;
+function openSheet(title,html){
+  closeSheet();lastFocus=document.activeElement;
+  sheetRoot.innerHTML='<div class="scrim" data-act="close"></div><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><header><h2 id="sheetTitle">'+esc(title)+'</h2><button class="x" type="button" data-act="close" aria-label="Tutup">×</button></header><div class="sheet-body">'+html+'</div></section>';
+  const f=sheetRoot.querySelector('input:not([type=hidden]),select,textarea,.btn');if(f)f.focus();
+}
+function closeSheet(){sheetRoot.innerHTML='';S.ifc=null;if(lastFocus&&lastFocus.focus){try{lastFocus.focus()}catch(e){}}lastFocus=null}
+let toastT=0;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},3200)}
+function guard(){if(!S.canWrite){toast('Akun ini hanya bisa melihat data gudang.');return false}return true}
+function writeError(e){
+  const c=e&&e.code;
+  if(c==='invalid_argument'){S.canWrite=false;return 'Akun ini tidak punya izin mengubah data gudang. Minta akses Kontributor dari pemilik halaman.'}
+  if(c==='quota_exceeded')return 'Penyimpanan penuh. Hapus data lama atau data contoh, lalu coba lagi.';
+  return 'Gagal menyimpan. Periksa koneksi lalu coba lagi.';
+}
+
+/* ================= form transaksi ================= */
+const wbsOptions=(pid,sel)=>'<option value="">Tanpa WBS</option>'+S.wbs.filter(w=>w.proyekId===pid).sort((a,b)=>nat(a.kode,b.kode)).map(w=>'<option value="'+esc(w.kode)+'"'+(w.kode===sel?' selected':'')+'>'+esc(w.kode)+' · '+esc(w.nama)+'</option>').join('');
+function openTx(type,itemId,pid,wbs){
+  if(!guard())return;
+  if(!S.items.length){toast('Tambahkan material dulu sebelum mencatat transaksi.');return}
+  const items=S.items.slice().sort((a,b)=>nat(a.nama,b.nama));
+  const sel=itemId||items[0].id;
+  const iopts=items.map(i=>'<option value="'+esc(i.id)+'"'+(i.id===sel?' selected':'')+'>'+esc(i.kode)+' · '+esc(i.nama)+'</option>').join('');
+  const popts='<option value="">Pemakaian umum (tanpa proyek)</option>'+S.projects.filter(p=>p.status!=='selesai'||p.id===pid).map(p=>'<option value="'+esc(p.id)+'"'+(p.id===pid?' selected':'')+'>'+esc(p.nama)+'</option>').join('');
+  const sup={};S.moves.forEach(m=>{if(m.jenis==='masuk'&&m.pihak)sup[m.pihak]=1});
+  const dl=Object.keys(sup).map(s=>'<option value="'+esc(s)+'">').join('');
+  const seg=['masuk','keluar','opname'].map(t=>'<button type="button" data-act="txtype" data-v="'+t+'" aria-pressed="'+(t===type)+'">'+({masuk:'Barang masuk',keluar:'Barang keluar',opname:'Opname'})[t]+'</button>').join('');
+  openSheet('Catat transaksi',
+   '<form id="txForm" novalidate><input type="hidden" name="jenis" value="'+type+'">'
+   +'<div class="seg" role="group" aria-label="Jenis transaksi" style="justify-self:start">'+seg+'</div>'
+   +'<label class="field"><span>Material</span><select id="txItem" name="itemId">'+iopts+'</select></label>'
+   +'<div class="row2"><label class="field" data-for="masuk keluar"><span>Jumlah <b id="txUnit"></b></span><input id="txQty" name="qty" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></label>'
+   +'<label class="field" data-for="opname"><span>Jumlah fisik hasil hitung <b class="txUnit2"></b></span><input id="txFisik" name="fisik" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></label>'
+   +'<label class="field"><span>Tanggal</span><input name="tanggal" type="date" value="'+todayStr()+'" max="'+todayStr()+'"></label></div>'
+   +'<div class="row2" data-for="masuk"><label class="field"><span>Pemasok</span><input name="pemasok" type="text" list="dlSup" autocomplete="off" placeholder="Nama toko atau pemasok"></label><label class="field"><span>No. surat jalan</span><input name="noSJ" type="text" autocomplete="off" placeholder="SJ-"></label></div>'
+   +'<label class="field" data-for="masuk"><span>Harga satuan (Rp)</span><input id="txHarga" name="harga" type="text" inputmode="decimal" autocomplete="off"></label>'
+   +'<div class="row2" data-for="keluar"><label class="field"><span>Proyek tujuan</span><select name="proyekId">'+popts+'</select></label><label class="field"><span>Pekerjaan (WBS id)</span><select id="txWbs" name="wbs">'+wbsOptions(pid||'',wbs||'')+'</select></label></div>'
+   +'<div class="row2" data-for="keluar"><label class="field"><span>Penerima / mandor</span><input name="penerima" type="text" autocomplete="off"></label><label class="field"><span>No. bon pemakaian</span><input name="noBon" type="text" autocomplete="off" placeholder="BON-"></label></div>'
+   +'<label class="field"><span>Catatan (boleh kosong)</span><input name="catatan" type="text" autocomplete="off"></label>'
+   +'<label class="field"><span>Dicatat oleh</span><input name="petugas" type="text" autocomplete="off" value="'+esc(lsGet('gm-petugas'))+'" placeholder="Nama petugas gudang"></label>'
+   +'<datalist id="dlSup">'+dl+'</datalist>'
+   +'<div class="preview" id="txPrev"></div><div class="err" id="txErr" role="alert"></div>'
+   +'<div class="actions"><button class="btn ghost" type="button" data-act="close">Batal</button><button class="btn primary" type="submit" id="txSave">Simpan</button></div></form>');
+  if(type==='masuk')setTxHarga();
+  syncTx();
+}
+function syncTx(){
+  const form=$('#txForm');if(!form)return;
+  const jenis=form.elements.jenis.value;
+  form.querySelectorAll('[data-for]').forEach(el=>{el.hidden=el.dataset.for.split(' ').indexOf(jenis)<0});
+  form.querySelectorAll('[data-act="txtype"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===jenis)));
+  const C=compute(),it=C.byId.get(form.elements.itemId.value);if(!it)return;
+  const s=C.stock.get(it.id),u=it.satuan||'';
+  $('#txUnit').textContent='('+u+')';form.querySelectorAll('.txUnit2').forEach(e=>{e.textContent='('+u+')'});
+  let prev,warn=false;
+  if(jenis==='opname'){const f=parseNum(form.elements.fisik.value);prev='Stok sistem <b class="num">'+num(s)+'</b> '+esc(u)+(isNaN(f)?'':' → selisih <b class="num">'+(f-s>0?'+':'')+num(r2(f-s))+'</b>')}
+  else{
+    const q=parseNum(form.elements.qty.value);const after=isNaN(q)?null:r2(s+(jenis==='masuk'?q:-q));
+    prev='Stok sekarang <b class="num">'+num(s)+'</b> '+esc(u)+(after==null?'':' → sesudah <b class="num">'+num(after)+'</b>');
+    if(jenis==='keluar'&&form.elements.wbs.value&&form.elements.proyekId.value){
+      const w=S.wbs.filter(x=>x.proyekId===form.elements.proyekId.value&&x.kode===form.elements.wbs.value)[0];
+      if(w){const line=(w.kebutuhan||[]).filter(k=>k.itemId===it.id)[0];const act=(C.actW.get(wk(w.proyekId,w.kode))||new Map()).get(it.id)||0;
+        if(!line)prev+='<br>WBS '+esc(w.kode)+' belum punya rencana untuk material ini (terpakai '+num(act)+').';
+        else{const tot=r2(act+(isNaN(q)?0:q));prev+='<br>Rencana WBS '+esc(w.kode)+': '+num(line.qty)+' '+esc(u)+' · terpakai '+num(act)+' → '+num(tot)+(tot>line.qty?' (melebihi rencana '+num(r2(tot-line.qty))+')':'');warn=tot>line.qty}}
+    }
+  }
+  const pv=$('#txPrev');pv.innerHTML=prev;pv.classList.toggle('warn',warn);
+}
+function setTxHarga(){const form=$('#txForm');if(!form)return;const C=compute(),it=C.byId.get(form.elements.itemId.value);if(it)form.elements.harga.value=it.harga?String(it.harga):''}
+async function submitTx(form){
+  const f=form.elements,jenis=f.jenis.value,C=compute(),it=C.byId.get(f.itemId.value);
+  const err=m=>{$('#txErr').textContent=m;return false};
+  if(!it)return err('Pilih material.');
+  const s=C.stock.get(it.id),tanggal=f.tanggal.value||todayStr();let delta=0;
+  if(tanggal>todayStr())return err('Tanggal tidak boleh di masa depan.');
+  const m={itemId:it.id,jenis,tanggal,proyekId:'',wbs:'',pihak:'',noDok:'',catatan:f.catatan.value.trim(),petugas:f.petugas.value.trim(),harga:Number(it.harga)||0};
+  if(jenis==='opname'){const fis=parseNum(f.fisik.value);if(isNaN(fis)||fis<0)return err('Isi jumlah fisik hasil hitung.');delta=r2(fis-s);if(delta===0)return err('Jumlah fisik sama dengan stok sistem, tidak ada yang perlu dikoreksi.')}
+  else{
+    const q=parseNum(f.qty.value);if(isNaN(q)||q<=0)return err('Isi jumlah lebih dari nol.');
+    if(jenis==='keluar'){if(q>s)return err('Stok hanya '+num(s)+' '+it.satuan+'. Kurangi jumlah atau catat barang masuk dulu.');delta=-q;m.proyekId=f.proyekId.value;m.wbs=m.proyekId?f.wbs.value:'';m.pihak=f.penerima.value.trim();m.noDok=f.noBon.value.trim()}
+    else{delta=q;m.pihak=f.pemasok.value.trim();m.noDok=f.noSJ.value.trim();const h=parseNum(f.harga.value);if(!isNaN(h)&&h>=0)m.harga=h}
+  }
+  m.delta=r2(delta);
+  const p=tanggal.split('-').map(Number);m.ts=tanggal===todayStr()?Date.now():new Date(p[0],p[1]-1,p[2],12).getTime();
+  lsSet('gm-petugas',m.petugas);
+  const btn=$('#txSave');btn.disabled=true;
+  try{
+    await S.db.collection('movements').add(m);
+    if(jenis==='masuk'&&m.harga>0&&m.harga!==(Number(it.harga)||0)){try{await S.db.doc('items/'+it.id).update({harga:m.harga})}catch(e){}}
+    closeSheet();
+    toast((jenis==='masuk'?'Barang masuk':jenis==='keluar'?'Barang keluar':'Opname')+' tercatat: '+it.nama);
+  }catch(e){btn.disabled=false;err(writeError(e))}
+  return false;
+}
+
+/* ================= form material ================= */
+function openItem(id){
+  if(!guard())return;
+  const C=compute(),it=id?C.byId.get(id):null;
+  const cats=CATS.slice();S.items.forEach(i=>{if(i.kategori&&cats.indexOf(i.kategori)<0)cats.push(i.kategori)});
+  const nextNo=String(S.items.length+1).padStart(3,'0');
+  const v=(k,d)=>esc(it&&it[k]!=null?it[k]:(d==null?'':d));
+  openSheet(it?'Ubah material':'Material baru',
+   '<form id="itemForm" novalidate data-id="'+esc(id||'')+'">'
+   +'<div class="row2"><label class="field"><span>Kode</span><input name="kode" type="text" autocomplete="off" value="'+v('kode','MAT-'+nextNo)+'"></label><label class="field"><span>Satuan</span><input name="satuan" type="text" list="dlUnit" autocomplete="off" value="'+v('satuan')+'" placeholder="sak, batang, m³"></label></div>'
+   +'<label class="field"><span>Nama material</span><input name="nama" type="text" autocomplete="off" value="'+v('nama')+'" placeholder="Contoh: Besi Ulir D13 × 12 m"></label>'
+   +'<div class="row2"><label class="field"><span>Kategori</span><input name="kategori" type="text" list="dlCat" autocomplete="off" value="'+v('kategori')+'"></label><label class="field"><span>Lokasi rak</span><input name="rak" type="text" autocomplete="off" value="'+v('rak')+'" placeholder="A-1 atau Halaman"></label></div>'
+   +'<div class="row2"><label class="field"><span>Stok minimum</span><input name="min" type="text" inputmode="decimal" autocomplete="off" value="'+v('min',0)+'"></label><label class="field"><span>Harga satuan (Rp)</span><input name="harga" type="text" inputmode="decimal" autocomplete="off" value="'+v('harga',0)+'"></label></div>'
+   +(it?'<p class="meta">Untuk mengoreksi jumlah stok, catat transaksi Opname agar riwayatnya tetap terlihat.</p>':'<label class="field"><span>Stok awal</span><input name="stokAwal" type="text" inputmode="decimal" autocomplete="off" value="0"></label>')
+   +'<datalist id="dlUnit">'+UNITS.map(u=>'<option value="'+esc(u)+'">').join('')+'</datalist><datalist id="dlCat">'+cats.map(c=>'<option value="'+esc(c)+'">').join('')+'</datalist>'
+   +'<div class="err" id="itemErr" role="alert"></div><div class="actions"><button class="btn ghost" type="button" data-act="close">Batal</button><button class="btn primary" type="submit" id="itemSave">Simpan</button></div></form>');
+}
+async function submitItem(form){
+  const f=form.elements,id=form.dataset.id;
+  const err=m=>{$('#itemErr').textContent=m;return false};
+  const o={kode:f.kode.value.trim(),nama:f.nama.value.trim(),satuan:f.satuan.value.trim(),kategori:f.kategori.value.trim()||'Lainnya',rak:f.rak.value.trim()};
+  if(!o.kode||!o.nama||!o.satuan)return err('Kode, nama, dan satuan wajib diisi.');
+  if(S.items.some(i=>i.id!==id&&String(i.kode).toLowerCase()===o.kode.toLowerCase()))return err('Kode '+o.kode+' sudah dipakai material lain.');
+  const mn=parseNum(f.min.value),hg=parseNum(f.harga.value);
+  if(isNaN(mn)||mn<0||isNaN(hg)||hg<0)return err('Stok minimum dan harga harus berupa angka.');
+  o.min=mn;o.harga=hg;
+  if(!id){const sa=parseNum(f.stokAwal.value);if(isNaN(sa)||sa<0)return err('Stok awal harus berupa angka.');o.stokAwal=sa}
+  const btn=$('#itemSave');btn.disabled=true;
+  try{
+    if(id)await S.db.doc('items/'+id).update(o);else await S.db.collection('items').add(o);
+    closeSheet();toast(id?'Material diperbarui.':'Material ditambahkan.');
+  }catch(e){btn.disabled=false;err(writeError(e))}
+  return false;
+}
+
+/* ================= form proyek ================= */
+function openProj(id){
+  if(!guard())return;
+  const p=id?S.projects.filter(x=>x.id===id)[0]:null;
+  const v=k=>esc(p&&p[k]!=null?p[k]:'');
+  openSheet(p?'Ubah proyek':'Proyek baru',
+   '<form id="projForm" novalidate data-id="'+esc(id||'')+'">'
+   +'<div class="row2"><label class="field"><span>Kode proyek</span><input name="kode" type="text" autocomplete="off" value="'+v('kode')+'" placeholder="RKO-MLT"></label><label class="field"><span>Status</span><select name="status"><option value="berjalan"'+(p&&p.status==='selesai'?'':' selected')+'>Berjalan</option><option value="selesai"'+(p&&p.status==='selesai'?' selected':'')+'>Selesai</option></select></label></div>'
+   +'<label class="field"><span>Nama proyek</span><input name="nama" type="text" autocomplete="off" value="'+v('nama')+'" placeholder="Contoh: Ruko 3 Lantai Jl. Melati"></label>'
+   +'<label class="field"><span>Lokasi</span><input name="lokasi" type="text" autocomplete="off" value="'+v('lokasi')+'"></label>'
+   +'<div class="row2"><label class="field"><span>Klien</span><input name="klien" type="text" autocomplete="off" value="'+v('klien')+'"></label><label class="field"><span>Penanggung jawab lapangan</span><input name="pj" type="text" autocomplete="off" value="'+v('pj')+'"></label></div>'
+   +'<div class="row2"><label class="field"><span>Mulai</span><input name="tglMulai" type="date" value="'+v('tglMulai')+'"></label><label class="field"><span>Target selesai</span><input name="tglTarget" type="date" value="'+v('tglTarget')+'"></label></div>'
+   +'<label class="field"><span>Anggaran material (Rp)</span><input name="anggaran" type="text" inputmode="decimal" autocomplete="off" value="'+v('anggaran')+'" placeholder="650000000"></label>'
+   +'<div class="err" id="projErr" role="alert"></div><div class="actions"><button class="btn ghost" type="button" data-act="close">Batal</button><button class="btn primary" type="submit" id="projSave">Simpan</button></div></form>');
+}
+async function submitProj(form){
+  const f=form.elements,id=form.dataset.id;
+  const err=m=>{$('#projErr').textContent=m;return false};
+  const ang=f.anggaran.value.trim()===''?0:parseNum(f.anggaran.value);
+  const o={kode:f.kode.value.trim(),nama:f.nama.value.trim(),lokasi:f.lokasi.value.trim(),klien:f.klien.value.trim(),pj:f.pj.value.trim(),status:f.status.value,tglMulai:f.tglMulai.value,tglTarget:f.tglTarget.value,anggaran:ang};
+  if(!o.nama)return err('Nama proyek wajib diisi.');
+  if(isNaN(ang)||ang<0)return err('Anggaran harus berupa angka.');
+  if(o.tglMulai&&o.tglTarget&&o.tglTarget<o.tglMulai)return err('Target selesai tidak boleh sebelum tanggal mulai.');
+  const btn=$('#projSave');btn.disabled=true;
+  try{
+    let pid=id;
+    if(id)await S.db.doc('projects/'+id).update(o);else{const r=await S.db.collection('projects').add(o);pid=r.id}
+    S.openProj[pid]=true;
+    closeSheet();toast(id?'Proyek diperbarui.':'Proyek ditambahkan. Lanjutkan dengan menyusun WBS.');
+  }catch(e){btn.disabled=false;err(writeError(e))}
+  return false;
+}
+
+/* ================= form WBS ================= */
+function kbRow(sel,qty){
+  const opts=S.items.slice().sort((a,b)=>nat(a.nama,b.nama)).map(i=>'<option value="'+esc(i.id)+'"'+(i.id===sel?' selected':'')+'>'+esc(i.kode)+' · '+esc(i.nama)+'</option>').join('');
+  return '<div class="kb"><select name="kbItem" aria-label="Material">'+opts+'</select><input name="kbQty" type="text" inputmode="decimal" autocomplete="off" aria-label="Jumlah rencana" placeholder="Jumlah" value="'+esc(qty==null?'':qty)+'"><button class="btn sm ghost" type="button" data-act="kb-del" aria-label="Hapus baris">×</button></div>';
+}
+function openWbs(pid,id){
+  if(!guard())return;
+  const w=id?S.wbs.filter(x=>x.id===id)[0]:null;
+  const proj=S.projects.filter(p=>p.id===(w?w.proyekId:pid))[0];if(!proj)return;
+  const rows=(w&&w.kebutuhan||[]).map(k=>kbRow(k.itemId,k.qty)).join('');
+  openSheet(w?'Ubah WBS':'WBS baru',
+   '<form id="wbsForm" novalidate data-id="'+esc(id||'')+'" data-pid="'+esc(proj.id)+'"><p class="meta">Proyek: <b>'+esc(proj.nama)+'</b></p>'
+   +'<div class="row2"><label class="field"><span>WBS id</span><input name="kode" type="text" autocomplete="off" value="'+esc(w?w.kode:'')+'" placeholder="1.2.3"></label><label class="field" style="grid-column:span 2"><span>Nama pekerjaan</span><input name="nama" type="text" autocomplete="off" value="'+esc(w?w.nama:'')+'" placeholder="Contoh: Pondasi telapak"></label></div>'
+   +'<p class="meta">WBS id harus sama dengan nilai properti WBS pada elemen di model BIM agar impor IFC dapat mencocokkannya.</p>'
+   +'<div><div class="lbl" style="margin-bottom:6px">Kebutuhan material (rencana)</div><div id="kbRows" style="display:grid;gap:8px">'+rows+'</div><button class="btn sm ghost" type="button" data-act="kb-add" style="margin-top:8px">+ Tambah material</button></div>'
+   +'<div class="err" id="wbsErr" role="alert"></div><div class="actions">'+(w?'<button class="btn danger" type="button" data-act="wbs-del" style="margin-right:auto">Hapus WBS</button>':'')+'<button class="btn ghost" type="button" data-act="close">Batal</button><button class="btn primary" type="submit" id="wbsSave">Simpan</button></div></form>');
+}
+async function submitWbs(form){
+  const f=form.elements,id=form.dataset.id,pid=form.dataset.pid;
+  const err=m=>{$('#wbsErr').textContent=m;return false};
+  const kode=f.kode.value.trim(),nama=f.nama.value.trim();
+  if(!kode||!nama)return err('WBS id dan nama pekerjaan wajib diisi.');
+  if(S.wbs.some(w=>w.proyekId===pid&&w.id!==id&&w.kode.trim().toLowerCase()===kode.toLowerCase()))return err('WBS id '+kode+' sudah ada di proyek ini.');
+  const its=[].slice.call(form.querySelectorAll('select[name=kbItem]')),qs=[].slice.call(form.querySelectorAll('input[name=kbQty]'));
+  const kb=[],seen={};
+  for(let k=0;k<its.length;k++){
+    const q=parseNum(qs[k].value),iid=its[k].value;
+    if(qs[k].value.trim()===''&&isNaN(q))continue;
+    if(isNaN(q)||q<=0)return err('Jumlah rencana pada baris '+(k+1)+' harus lebih dari nol.');
+    if(seen[iid])return err('Material yang sama muncul dua kali. Gabungkan jumlahnya.');
+    seen[iid]=1;kb.push({itemId:iid,qty:q});
+  }
+  const btn=$('#wbsSave');btn.disabled=true;
+  try{
+    if(id)await S.db.doc('wbs/'+id).update({kode,nama,kebutuhan:kb});
+    else await S.db.collection('wbs').add({proyekId:pid,kode,nama,kebutuhan:kb});
+    S.openProj[pid]=true;closeSheet();toast(id?'WBS diperbarui.':'WBS ditambahkan.');
+  }catch(e){btn.disabled=false;err(writeError(e))}
+  return false;
+}
+
+/* ================= IFC ================= */
+const ELEM=/^IFC(WALL|WALLSTANDARDCASE|SLAB|BEAM|COLUMN|FOOTING|PILE|STAIR|STAIRFLIGHT|RAMP|RAMPFLIGHT|ROOF|DOOR|WINDOW|PLATE|MEMBER|RAILING|COVERING|CURTAINWALL|BUILDINGELEMENTPROXY|REINFORCINGBAR|REINFORCINGMESH|ELEMENTASSEMBLY|CHIMNEY|SHADINGDEVICE|FLOWSEGMENT|FLOWFITTING|FLOWTERMINAL|DISTRIBUTIONELEMENT|FURNISHINGELEMENT|BUILDINGELEMENTPART|TENDON)$/;
+const TYPE_NAME={IFCFOOTING:'Pondasi',IFCPILE:'Tiang pancang',IFCCOLUMN:'Kolom',IFCBEAM:'Balok',IFCSLAB:'Pelat',IFCWALL:'Dinding',IFCWALLSTANDARDCASE:'Dinding',IFCROOF:'Atap',IFCSTAIR:'Tangga',IFCSTAIRFLIGHT:'Tangga',IFCDOOR:'Pintu',IFCWINDOW:'Jendela',IFCPLATE:'Pelat baja',IFCMEMBER:'Rangka',IFCRAILING:'Railing',IFCCOVERING:'Penutup',IFCCURTAINWALL:'Dinding tirai',IFCBUILDINGELEMENTPROXY:'Elemen umum',IFCREINFORCINGBAR:'Tulangan',IFCREINFORCINGMESH:'Wiremesh'};
+function ifcSplit(s){
+  const out=[];let depth=0,cur='',q=false;
+  for(let i=0;i<s.length;i++){const c=s[i];
+    if(q){cur+=c;if(c==="'"){if(s[i+1]==="'"){cur+="'";i++}else q=false}continue}
+    if(c==="'"){q=true;cur+=c;continue}
+    if(c==='('){depth++;cur+=c;continue}
+    if(c===')'){depth--;cur+=c;continue}
+    if(c===','&&depth===0){out.push(cur.trim());cur='';continue}
+    cur+=c}
+  out.push(cur.trim());return out;
+}
+function ifcStr(a){
+  if(!a||a[0]!=="'")return '';
+  let s=a.slice(1,-1).replace(/''/g,"'");
+  s=s.replace(/\\X2\\([0-9A-F]+)\\X0\\/g,(m,h)=>{let r='';for(let i=0;i+3<h.length;i+=4)r+=String.fromCharCode(parseInt(h.substr(i,4),16));return r});
+  return s;
+}
+const ifcRefs=a=>{const r=[],re=/#(\d+)/g;let m;while((m=re.exec(a||'')))r.push(m[1]);return r};
+function ifcVal(a){if(!a)return '';const m=/^[A-Z0-9_]+\(([\s\S]*)\)$/.exec(a);const inner=m?m[1]:a;return inner[0]==="'"?ifcStr(inner):inner}
+function parseIFC(text){
+  let scale=1,schema='';
+  const sm=/FILE_SCHEMA\s*\(\s*\(\s*'([^']+)'/.exec(text);if(sm)schema=sm[1];
+  const um=/IFCSIUNIT\s*\(\s*\*\s*,\s*\.LENGTHUNIT\.\s*,\s*(\.[A-Z]+\.|\$)/.exec(text);
+  if(um){if(um[1]==='.MILLI.')scale=.001;else if(um[1]==='.CENTI.')scale=.01}
+  const elems=new Map(),props={},psets={},qdefs={},quants={},rels=[],cls={},relc=[];
+  const re=/#(\d+)\s*=\s*([A-Z0-9_]+)\s*\(([\s\S]*?)\)\s*;/g;let m;
+  while((m=re.exec(text))){
+    const id=m[1],t=m[2];let a;
+    if(ELEM.test(t)){a=ifcSplit(m[3]);elems.set(id,{id,type:t,guid:ifcStr(a[0]),name:ifcStr(a[2]),tag:ifcStr(a[7]),props:{},cls:[],q:{},pref:{}})}
+    else if(t==='IFCPROPERTYSINGLEVALUE'){a=ifcSplit(m[3]);props[id]={n:ifcStr(a[0]),v:ifcVal(a[2])}}
+    else if(t==='IFCPROPERTYSET'){a=ifcSplit(m[3]);psets[id]=ifcRefs(a[4])}
+    else if(t==='IFCELEMENTQUANTITY'){a=ifcSplit(m[3]);qdefs[id]=ifcRefs(a[5])}
+    else if(/^IFCQUANTITY(LENGTH|AREA|VOLUME|WEIGHT|COUNT)$/.test(t)){a=ifcSplit(m[3]);quants[id]={n:ifcStr(a[0]),k:t.slice(11),v:parseFloat(a[3])}}
+    else if(t==='IFCRELDEFINESBYPROPERTIES'){a=ifcSplit(m[3]);rels.push([ifcRefs(a[4]),ifcRefs(a[5])[0]])}
+    else if(t==='IFCCLASSIFICATIONREFERENCE'){a=ifcSplit(m[3]);cls[id]=ifcStr(a[1])}
+    else if(t==='IFCRELASSOCIATESCLASSIFICATION'){a=ifcSplit(m[3]);relc.push([ifcRefs(a[4]),ifcRefs(a[5])[0]])}
+  }
+  const setQ=(e,key,name,v)=>{const net=/^net/i.test(name);if(e.q[key]==null||(net&&!e.pref[key])){e.q[key]=v;e.pref[key]=net}};
+  const propNames=new Map();
+  rels.forEach(r=>{r[0].forEach(o=>{
+    const e=elems.get(o);if(!e)return;const def=r[1];
+    (psets[def]||[]).forEach(pid=>{const p=props[pid];if(p&&p.v!==''){e.props[p.n]=p.v}});
+    (qdefs[def]||[]).forEach(qid=>{const q=quants[qid];if(!q||isNaN(q.v))return;
+      if(q.k==='VOLUME')setQ(e,'volume',q.n,q.v*Math.pow(scale,3));
+      else if(q.k==='AREA')setQ(e,'luas',q.n,q.v*scale*scale);
+      else if(q.k==='LENGTH')setQ(e,'panjang',q.n,q.v*scale);
+      else if(q.k==='WEIGHT')setQ(e,'berat',q.n,q.v);
+    });
+  })});
+  relc.forEach(r=>{r[0].forEach(o=>{const e=elems.get(o);if(e&&cls[r[1]])e.cls.push(cls[r[1]])})});
+  let hasCls=false,hasTag=false;
+  elems.forEach(e=>{Object.keys(e.props).forEach(n=>propNames.set(n,(propNames.get(n)||0)+1));if(e.cls.length)hasCls=true;if(/^\d+(\.\d+)*$/.test(e.tag))hasTag=true});
+  return {schema,scale,elems:Array.from(elems.values()),propNames,hasCls,hasTag};
+}
+function ifcSources(model){
+  const src=[];
+  Array.from(model.propNames.keys()).filter(n=>/wbs/i.test(n)).forEach(n=>src.push({v:'prop:'+n,l:'Properti "'+n+'"'}));
+  if(model.hasCls)src.push({v:'cls',l:'Referensi klasifikasi'});
+  if(model.hasTag)src.push({v:'tag',l:'Tag elemen'});
+  Array.from(model.propNames.keys()).filter(n=>!/wbs/i.test(n)).slice(0,12).forEach(n=>src.push({v:'prop:'+n,l:'Properti "'+n+'" (lainnya)'}));
+  return src;
+}
+function ifcGroup(model,source){
+  const groups=new Map();let tanpa=0;
+  model.elems.forEach(e=>{
+    let k='';
+    if(source.indexOf('prop:')===0)k=String(e.props[source.slice(5)]||'').trim();
+    else if(source==='cls')k=String(e.cls[0]||'').trim();
+    else if(source==='tag')k=String(e.tag||'').trim();
+    if(!k){tanpa++;return}
+    const key=k.toLowerCase();let g=groups.get(key);
+    if(!g){g={kode:k,elemen:0,tipe:{},volume:0,luas:0,panjang:0,berat:0,guids:[]};groups.set(key,g)}
+    g.elemen++;g.tipe[e.type]=(g.tipe[e.type]||0)+1;
+    g.volume+=e.q.volume||0;g.luas+=e.q.luas||0;g.panjang+=e.q.panjang||0;g.berat+=e.q.berat||0;
+    if(g.guids.length<200&&e.guid)g.guids.push(e.guid);
+  });
+  const list=Array.from(groups.values()).sort((a,b)=>nat(a.kode,b.kode));
+  list.forEach(g=>{g.volume=r2(g.volume);g.luas=r2(g.luas);g.panjang=r2(g.panjang);g.berat=r2(g.berat)});
+  return {list,tanpa};
+}
+function sampleIFC(){
+  const L=[];let n=10;const nid=()=>'#'+(++n);
+  const ch='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$';let seed=7;
+  const guid=()=>{let s='';for(let i=0;i<22;i++){seed=(seed*1103515245+12345)&0x7fffffff;s+=ch[(seed>>8)%64]}return s};
+  L.push("ISO-10303-21;","HEADER;","FILE_DESCRIPTION(('ViewDefinition [CoordinationView]'),'2;1');","FILE_NAME('Ruko_Melati_STR.ifc','2026-10-01T09:00:00',('Tim BIM'),('Contoh'),'','','');","FILE_SCHEMA(('IFC4'));","ENDSEC;","DATA;","#1=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);");
+  const spec=[];
+  for(let i=1;i<=12;i++)spec.push(['IFCFOOTING','F'+i,'1.2',1.44,0,0]);
+  for(let i=1;i<=8;i++)spec.push(['IFCCOLUMN','K'+i,'1.3',0.45,0,3.6]);
+  for(let i=1;i<=10;i++)spec.push(['IFCBEAM','S'+i,'1.3',0.3,0,4.2]);
+  spec.push(['IFCSLAB','Pelat Lt.2','1.4',22.5,150,0]);
+  for(let i=1;i<=6;i++)spec.push(['IFCWALLSTANDARDCASE','D'+i,'1.5',1.8,18,6]);
+  for(let i=1;i<=3;i++)spec.push(['IFCWALLSTANDARDCASE','Dinding '+i,'',1.2,12,4]);
+  spec.forEach(s=>{
+    const e=nid();L.push(e+"=IFC"+s[0].slice(3)+"('"+guid()+"',$,'"+s[1]+"',$,$,$,$,'"+s[1]+"',$);");
+    const q=[];
+    if(s[3]){const x=nid();L.push(x+"=IFCQUANTITYVOLUME('NetVolume',$,$,"+s[3]+",$);");q.push(x)}
+    if(s[4]){const x=nid();L.push(x+"=IFCQUANTITYAREA('NetArea',$,$,"+s[4]+",$);");q.push(x)}
+    if(s[5]){const x=nid();L.push(x+"=IFCQUANTITYLENGTH('Length',$,$,"+s[5]+",$);");q.push(x)}
+    const eq=nid();L.push(eq+"=IFCELEMENTQUANTITY('"+guid()+"',$,'BaseQuantities',$,$,("+q.join(',')+"));");
+    L.push(nid()+"=IFCRELDEFINESBYPROPERTIES('"+guid()+"',$,$,$,("+e+"),"+eq+");");
+    if(s[2]){const p=nid();L.push(p+"=IFCPROPERTYSINGLEVALUE('WBS',$,IFCLABEL('"+s[2]+"'),$);");const ps=nid();L.push(ps+"=IFCPROPERTYSET('"+guid()+"',$,'Pset_Proyek',$,("+p+"));");L.push(nid()+"=IFCRELDEFINESBYPROPERTIES('"+guid()+"',$,$,$,("+e+"),"+ps+");")}
+  });
+  L.push("ENDSEC;","END-ISO-10303-21;");
+  return L.join('\n');
+}
+function openIfc(pid){
+  if(!guard())return;
+  const p=S.projects.filter(x=>x.id===pid)[0];if(!p)return;
+  openSheet('Impor model IFC',
+   '<p class="meta">Proyek: <b>'+esc(p.nama)+'</b></p>'
+   +'<p>Pilih berkas IFC dari Revit, ArchiCAD, Tekla, atau aplikasi BIM lain. Elemen dikelompokkan menurut WBS id pada properti WBS, lalu dicocokkan dengan WBS proyek ini. Berkas dibaca di perangkat Anda dan tidak diunggah.</p>'
+   +'<label class="field"><span>Berkas IFC</span><input id="ifcFile" type="file" accept=".ifc,.IFC"></label>'
+   +'<div><button class="btn sm" type="button" data-act="ifc-sample">Coba dengan IFC contoh</button></div>'
+   +'<div id="ifcOut"></div>');
+  S.ifc={pid,model:null,file:'',source:'',sample:false};
+}
+function ifcRead(file){
+  const out=$('#ifcOut');
+  if(file.size>80*1024*1024){out.innerHTML='<p class="err">Berkas lebih dari 80 MB. Ekspor ulang IFC hanya untuk elemen struktur atau arsitektur yang perlu.</p>';return}
+  out.innerHTML='<p class="muted">Membaca '+esc(file.name)+'…</p>';
+  const fr=new FileReader();
+  fr.onerror=()=>{out.innerHTML='<p class="err">Berkas tidak bisa dibaca.</p>'};
+  fr.onload=()=>setTimeout(()=>ifcLoad(String(fr.result),file.name,false),30);
+  fr.readAsText(file);
+}
+function ifcLoad(text,name,sample){
+  const out=$('#ifcOut');if(!out||!S.ifc)return;
+  try{
+    const model=parseIFC(text);
+    if(!model.elems.length){out.innerHTML='<p class="err">Tidak ada elemen bangunan yang dikenali di berkas ini. Pastikan berkas berformat IFC (STEP) dan bukan ifcXML atau ifcZIP.</p>';return}
+    const src=ifcSources(model);
+    S.ifc.model=model;S.ifc.file=name;S.ifc.sample=sample;S.ifc.source=src.length?src[0].v:'';
+    ifcPreview();
+  }catch(e){out.innerHTML='<p class="err">Berkas gagal diurai. Coba ekspor ulang dari aplikasi BIM.</p>'}
+}
+function ifcPreview(){
+  const out=$('#ifcOut'),st=S.ifc;if(!out||!st||!st.model)return;
+  const model=st.model,src=ifcSources(model);
+  if(!src.length){out.innerHTML='<p class="err">Tidak ditemukan properti WBS, klasifikasi, maupun tag berformat angka bertitik pada elemen. Tambahkan parameter bernama WBS di model BIM, lalu ekspor ulang dengan property set kustom.</p>';return}
+  const g=ifcGroup(model,st.source),ex={};
+  S.wbs.filter(w=>w.proyekId===st.pid).forEach(w=>{ex[w.kode.trim().toLowerCase()]=w});
+  const sel='<label class="field"><span>Sumber WBS id</span><select id="ifcSrc">'+src.map(s=>'<option value="'+esc(s.v)+'"'+(s.v===st.source?' selected':'')+'>'+esc(s.l)+'</option>').join('')+'</select></label>';
+  const rows=g.list.map(x=>{
+    const tipe=Object.keys(x.tipe).map(k=>esc(TYPE_NAME[k]||k)+' ×'+x.tipe[k]).join(', ');
+    const q=[];if(x.volume)q.push(num(x.volume)+' m³');if(x.luas)q.push(num(x.luas)+' m²');if(x.panjang)q.push(num(x.panjang)+' m');if(x.berat)q.push(num(x.berat)+' kg');
+    const w=ex[x.kode.toLowerCase()];
+    return '<tr><td class="mono">'+esc(x.kode)+'</td><td>'+nf0.format(x.elemen)+' · '+tipe+'</td><td class="r num">'+(q.join('<br>')||'–')+'</td><td>'+(w?'<span class="chip ok">Cocok · '+esc(w.nama)+'</span>':'<span class="chip warn">Baru, akan dibuat</span>')+'</td></tr>';
+  }).join('');
+  const nMatch=g.list.filter(x=>ex[x.kode.toLowerCase()]).length;
+  out.innerHTML='<div style="display:grid;gap:12px">'+sel
+   +'<div class="preview"><b>'+esc(st.file)+'</b> · '+esc(model.schema||'IFC')+' · '+nf0.format(model.elems.length)+' elemen'+(model.scale!==1?' · satuan panjang dikonversi ke meter':'')+'<br>'+g.list.length+' WBS id ditemukan, '+nMatch+' cocok dengan WBS proyek'+(g.tanpa?'. <b>'+nf0.format(g.tanpa)+' elemen tidak punya WBS id</b> dan tidak diimpor.':'.')+'</div>'
+   +(g.list.length?'<div class="tbl-wrap"><table class="tbl"><thead><tr><th>WBS id</th><th>Elemen</th><th class="r">Kuantitas</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="err">Tidak ada elemen yang punya nilai pada sumber ini. Pilih sumber WBS id lain.</p>')
+   +'<div class="err" id="ifcErr" role="alert"></div><div class="actions"><button class="btn ghost" type="button" data-act="close">Batal</button><button class="btn primary" type="button" data-act="ifc-apply" id="ifcApply"'+(g.list.length?'':' disabled')+'>Terapkan ke proyek</button></div></div>';
+}
+async function ifcApply(btn){
+  const st=S.ifc;if(!st||!st.model)return;
+  const g=ifcGroup(st.model,st.source),err=m=>{$('#ifcErr').textContent=m};
+  btn.disabled=true;btn.textContent='Menyimpan…';
+  const now=Date.now();let nNew=0,nUpd=0;
+  try{
+    for(const x of g.list){
+      const bim={elemen:x.elemen,tipe:x.tipe,volume:x.volume,luas:x.luas,panjang:x.panjang,berat:x.berat,guids:x.guids,sumber:st.source,file:st.file,sinkron:now};
+      const w=S.wbs.filter(v=>v.proyekId===st.pid&&v.kode.trim().toLowerCase()===x.kode.toLowerCase())[0];
+      if(w){await S.db.doc('wbs/'+w.id).update({bim});nUpd++}
+      else{const top=Object.keys(x.tipe).sort((a,b)=>x.tipe[b]-x.tipe[a])[0];await S.db.collection('wbs').add({proyekId:st.pid,kode:x.kode,nama:(TYPE_NAME[top]||'Elemen')+' (dari IFC)',kebutuhan:[],bim});nNew++}
+    }
+    await S.db.doc('projects/'+st.pid).update({ifcFile:st.file,ifcSync:now});
+    S.openProj[st.pid]=true;closeSheet();
+    toast(nUpd+' WBS diperbarui, '+nNew+' WBS baru dari model.');
+  }catch(e){btn.disabled=false;btn.textContent='Terapkan ke proyek';err(writeError(e))}
+}
+
+/* ================= CSV per WBS ================= */
+function openCsv(pid){
+  const C=compute(),p=C.pById.get(pid);if(!p)return;
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=[['WBS_ID','Pekerjaan','Kode_Material','Material','Satuan','Rencana','Realisasi','Selisih','Elemen_BIM','Volume_m3','Luas_m2'].map(q).join(',')];
+  (C.wbsBy.get(pid)||[]).forEach(w=>{
+    const inf=wbsInfo(C,w),b=w.bim||{};
+    if(!inf.lines.length)rows.push([w.kode,w.nama,'','','','','','',b.elemen||'',b.volume||'',b.luas||''].map(q).join(','));
+    inf.lines.forEach(l=>rows.push([w.kode,w.nama,l.it.kode,l.it.nama,l.it.satuan,l.plan,l.act,r2(l.plan-l.act),b.elemen||'',b.volume||'',b.luas||''].map(q).join(',')));
+  });
+  const csv=rows.join('\n');
+  openSheet('CSV per WBS','<p class="meta">'+esc(p.nama)+'. Tempel ke Excel atau sambungkan ke tabel kuantitas di aplikasi BIM dengan kolom WBS_ID sebagai kunci.</p><textarea id="csvOut" readonly rows="10" style="font-family:var(--f-mono);font-size:12.5px">'+esc(csv)+'</textarea><div class="actions"><button class="btn ghost" type="button" data-act="close">Tutup</button><button class="btn primary" type="button" data-act="csv-copy">Salin</button></div>');
+}
+function csvCopy(){
+  const ta=$('#csvOut');if(!ta)return;
+  const fallback=()=>{ta.focus();ta.select();toast('Teks dipilih. Tekan salin di perangkat Anda.')};
+  try{navigator.clipboard.writeText(ta.value).then(()=>toast('CSV disalin.'),fallback)}catch(e){fallback()}
+}
+
+/* ================= kartu stok, batalkan, hapus contoh ================= */
+function openKartu(id){
+  const C=compute(),it=C.byId.get(id);if(!it)return;
+  let saldo=Number(it.stokAwal)||0;
+  const rows=C.moves.filter(m=>m.itemId===id).map(m=>{const d=Number(m.delta)||0;saldo=r2(saldo+d);
+    return '<tr><td>'+esc(fmtShort(m.tanggal))+'</td><td>'+moveDesc(m,C)+'</td><td class="r num">'+(d>0?num(d):'')+'</td><td class="r num">'+(d<0?num(-d):'')+'</td><td class="r num"><b>'+num(saldo)+'</b></td></tr>'}).join('');
+  const st=statusOf(it,saldo);
+  openSheet('Kartu stok',
+   '<div><div style="font:700 22px/1.15 var(--f-disp)">'+esc(it.nama)+'</div><div class="meta"><span class="mono">'+esc(it.kode)+'</span> · '+esc(it.kategori)+(it.rak?' · Rak '+esc(it.rak):'')+'</div></div>'
+   +'<div class="stats" style="margin:0"><div class="stat"><div class="l">Stok</div><div class="v">'+num(saldo)+' <span style="font-size:18px">'+esc(it.satuan)+'</span></div></div><div class="stat"><div class="l">Status</div><div class="v" style="font-size:26px"><span class="pill '+st+'">'+STATUS_LABEL[st]+'</span></div></div><div class="stat"><div class="l">Nilai</div><div class="v" style="font-size:26px">'+rpc(Math.max(saldo,0)*(Number(it.harga)||0))+'</div></div></div>'
+   +'<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Tgl</th><th>Keterangan</th><th class="r">Masuk</th><th class="r">Keluar</th><th class="r">Saldo</th></tr></thead><tbody><tr><td colspan="4" class="muted">Stok awal</td><td class="r num">'+num(it.stokAwal)+'</td></tr>'+rows+'</tbody></table></div>'
+   +'<div class="actions"><button class="btn" type="button" data-act="tx" data-type="masuk" data-item="'+esc(id)+'">Masuk</button><button class="btn" type="button" data-act="tx" data-type="keluar" data-item="'+esc(id)+'">Keluar</button></div>');
+}
+function openUndo(id){
+  if(!guard())return;
+  const C=compute(),m=S.moves.filter(x=>x.id===id)[0];if(!m)return;
+  const it=C.byId.get(m.itemId);const after=it?r2(C.stock.get(it.id)-(Number(m.delta)||0)):0;
+  const blocked=after<0;
+  openSheet('Batalkan transaksi?',
+   '<p>'+esc(TYPE_LABEL[m.jenis])+' <b>'+num(Math.abs(m.delta))+' '+esc(it?it.satuan:'')+'</b> '+esc(it?it.nama:'')+' pada '+esc(fmtShort(m.tanggal))+' akan dihapus dari riwayat.</p>'
+   +(blocked?'<p class="err">Transaksi ini tidak bisa dibatalkan karena stok akan menjadi '+num(after)+'. Batalkan transaksi keluar yang terkait lebih dulu.</p>':'<p class="meta">Stok '+esc(it?it.nama:'')+' akan menjadi '+num(after)+' '+esc(it?it.satuan:'')+'.</p>')
+   +'<div class="err" id="undoErr" role="alert"></div><div class="actions"><button class="btn ghost" type="button" data-act="close">Tidak jadi</button><button class="btn danger" type="button" data-act="undo-go" data-id="'+esc(id)+'"'+(blocked?' disabled':'')+'>Ya, batalkan</button></div>');
+}
+async function doUndo(id,btn){
+  btn.disabled=true;
+  try{await S.db.doc('movements/'+id).delete();closeSheet();toast('Transaksi dibatalkan.')}
+  catch(e){btn.disabled=false;$('#undoErr').textContent=writeError(e)}
+}
+function openClear(){
+  if(!guard())return;
+  openSheet('Hapus data contoh?','<p>Semua material, proyek, WBS, dan transaksi bertanda contoh akan dihapus. Data yang Anda tambahkan sendiri tetap ada.</p><div class="err" id="clrErr" role="alert"></div><div class="actions"><button class="btn ghost" type="button" data-act="close">Batal</button><button class="btn danger" type="button" data-act="clear-go">Hapus data contoh</button></div>');
+}
+async function doClear(btn){
+  btn.disabled=true;btn.textContent='Menghapus…';
+  try{
+    const sets=[['movements',S.moves],['wbs',S.wbs],['items',S.items],['projects',S.projects]];
+    const sampleP={};S.projects.forEach(p=>{if(p.contoh)sampleP[p.id]=1});
+    for(const s of sets){
+      const arr=s[1].filter(x=>x.contoh||(s[0]==='wbs'&&sampleP[x.proyekId])||(s[0]==='movements'&&x.proyekId&&sampleP[x.proyekId]));
+      for(const x of arr)await S.db.doc(s[0]+'/'+x.id).delete();
+    }
+    closeSheet();toast('Data contoh dihapus.');
+  }catch(e){btn.disabled=false;btn.textContent='Hapus data contoh';$('#clrErr').textContent=writeError(e)}
+}
+async function doDelWbs(id,btn){
+  if(btn.dataset.sure!=='1'){btn.dataset.sure='1';btn.textContent='Yakin hapus?';return}
+  btn.disabled=true;
+  try{await S.db.doc('wbs/'+id).delete();closeSheet();toast('WBS dihapus. Transaksi lama tetap tersimpan.')}
+  catch(e){btn.disabled=false;$('#wbsErr').textContent=writeError(e)}
+}
+
+/* ================= event ================= */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const a=t.dataset.act;
+  if(a==='tab'){closeSheet();S.tab=t.dataset.tab;S.built='';render();window.scrollTo(0,0)}
+  else if(a==='close')closeSheet();
+  else if(a==='open-proj'){S.openProj[t.dataset.id]=true;S.tab='proyek';S.built='';render();window.scrollTo(0,0)}
+  else if(a==='tx')openTx(t.dataset.type||'masuk',t.dataset.item||'',t.dataset.proj||'',t.dataset.wbs||'');
+  else if(a==='txtype'){const form=$('#txForm');form.elements.jenis.value=t.dataset.v;$('#txErr').textContent='';if(t.dataset.v==='masuk')setTxHarga();syncTx()}
+  else if(a==='item-new')openItem('');
+  else if(a==='item-edit')openItem(t.dataset.id);
+  else if(a==='kartu')openKartu(t.dataset.id);
+  else if(a==='proj-new')openProj('');
+  else if(a==='proj-edit')openProj(t.dataset.id);
+  else if(a==='wbs-new')openWbs(t.dataset.pid,'');
+  else if(a==='wbs-edit')openWbs('',t.dataset.id);
+  else if(a==='wbs-del')doDelWbs($('#wbsForm').dataset.id,t);
+  else if(a==='kb-add'){if(!S.items.length){toast('Tambahkan material dulu.');return}$('#kbRows').insertAdjacentHTML('beforeend',kbRow('',''))}
+  else if(a==='kb-del'){const r=t.closest('.kb');if(r)r.remove()}
+  else if(a==='ifc')openIfc(t.dataset.pid);
+  else if(a==='ifc-sample'){ifcLoad(sampleIFC(),'Ruko_Melati_STR.ifc (contoh)',true)}
+  else if(a==='ifc-apply')ifcApply(t);
+  else if(a==='csv')openCsv(t.dataset.pid);
+  else if(a==='csv-copy')csvCopy();
+  else if(a==='undo')openUndo(t.dataset.id);
+  else if(a==='undo-go')doUndo(t.dataset.id,t);
+  else if(a==='clear-sample')openClear();
+  else if(a==='clear-go')doClear(t);
+  else if(a==='stfilter'){S.status=t.dataset.v;S.built='';render()}
+  else if(a==='txfilter'){S.txType=t.dataset.v;S.txLimit=60;S.built='';render()}
+  else if(a==='more'){S.txLimit+=60;render()}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='q'){S.q=t.value;$('#stockList').innerHTML=stockListHTML(compute())}
+  else if(t.closest&&t.closest('#txForm')){$('#txErr').textContent='';syncTx()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='catSel'){S.cat=t.value;S.built='';render()}
+  else if(t.id==='stProjSel'){S.stProj=t.value;S.built='';render()}
+  else if(t.id==='projSel'){S.txProj=t.value;S.txLimit=60;S.built='';render()}
+  else if(t.id==='txItem'){const form=$('#txForm');if(form.elements.jenis.value==='masuk')setTxHarga();syncTx()}
+  else if(t.form&&t.form.id==='txForm'&&t.name==='proyekId'){$('#txWbs').innerHTML=wbsOptions(t.value,'');syncTx()}
+  else if(t.form&&t.form.id==='txForm'&&t.name==='wbs')syncTx();
+  else if(t.id==='ifcFile'){if(t.files&&t.files[0])ifcRead(t.files[0])}
+  else if(t.id==='ifcSrc'&&S.ifc){S.ifc.source=t.value;ifcPreview()}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target;
+  if(f.id==='txForm')submitTx(f);else if(f.id==='itemForm')submitItem(f);else if(f.id==='projForm')submitProj(f);else if(f.id==='wbsForm')submitWbs(f);
+});
+document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.classList)return;if(d.classList.contains('proj'))S.openProj[d.dataset.pid]=d.open;else if(d.classList.contains('wr'))S.openWbs[d.dataset.wid]=d.open},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetRoot.firstChild)closeSheet()});
+
+/* ================= mulai ================= */
+function sub(col,key){
+  S.db.collection(col).onSnapshot(snap=>{
+    S[key]=snap.docs.map(d=>{const o=Object.assign({},d.data()||{});o.id=d.id;return o});
+    S.ready[col]=true;scheduleRender();
+  },()=>{S.err=true;scheduleRender()});
+}
+async function start(){
+  render();
+  let db=null;
+  try{db=window.claude&&window.claude.use?await window.claude.use('db'):null}catch(e){db=null}
+  if(!db){S.offline=true;render();return}
+  S.db=db;
+  try{const user=await window.claude.use('user');const cw=user&&user.can?user.can('data.write'):null;if(cw===false)S.canWrite=false}catch(e){}
+  sub('items','items');sub('projects','projects');sub('wbs','wbs');sub('movements','moves');
+}
+start();
+})();
+</script>
+
+</body></html>
