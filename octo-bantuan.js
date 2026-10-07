@@ -8,7 +8,7 @@
   var APP = D.app || (me && me.getAttribute('data-app')) || 'Aplikasi';
   var CONFIG = {
     formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSfsUt_5JA8ZsR550JQWqb9hPzTelEhAM0H1VyJJ9bsTLPNXBA/viewform',
-    formEntry: D.formEntry || '',   // ID kolom "Aplikasi" di Google Form, mis. 'entry.123456789'
+    formEntry: D.formEntry || 'entry.510592713',   // ID kolom "Aplikasi" di Google Form, mis. 'entry.123456789'
     endpoint: '', whatsapp: '', email: '',
     tutorialUrl: D.tutorialUrl || '', manualUrl: D.manualUrl || '', versi: D.versi || '',
     posisi: D.posisi || 'kiri-bawah',
