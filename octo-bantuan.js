@@ -18,7 +18,8 @@
   var LANGKAH = D.langkah || [], PANDUAN = D.panduan || [], PINTASAN = D.pintasan || [];
   var JENIS = ['Ada yang rusak / error', 'Usulan fitur baru', 'Sulit dipakai / membingungkan', 'Lainnya'];
   var BAGIAN = D.bagian || ['Umum'];
-  var TAB = [['mulai', 'Mulai cepat'], ['panduan', 'Panduan alat'], ['pintasan', 'Pintasan'], ['masukan', 'Masukan']];
+  var MANUAL = D.manual || [], FAQ = D.faq || [], SINONIM = D.sinonim || [];
+  var TAB = [['mulai', 'Mulai cepat'], ['tanya', 'Tanya'], ['panduan', 'Panduan alat'], ['pintasan', 'Pintasan'], ['masukan', 'Masukan']];
   if (!PANDUAN.length) TAB = TAB.filter(function (t) { return t[0] !== 'panduan'; });
   if (!PINTASAN.length) TAB = TAB.filter(function (t) { return t[0] !== 'pintasan'; });
 
@@ -73,6 +74,20 @@
     'td{padding:8px 4px;border-bottom:1px solid var(--lb-line);vertical-align:top}',
     'td:first-child{width:52%;font-weight:600}',
     '.isi a{color:var(--lb-acc)}',
+    '.chat{display:flex;flex-direction:column;gap:10px}',
+    '.log{display:flex;flex-direction:column;gap:10px;min-height:120px}',
+    '.u{align-self:flex-end;max-width:85%;background:var(--lb-acc);color:var(--lb-accfg);border-radius:14px 14px 2px 14px;padding:7px 12px}',
+    '.bot{align-self:flex-start;max-width:100%;display:grid;gap:8px}',
+    '.bot .kartu{border:1px solid var(--lb-line);border-radius:12px 12px 12px 2px;background:var(--lb-soft);padding:9px 12px}',
+    '.bot .kartu b{display:block}',
+    '.bot .kartu .via{font-size:12px;color:var(--lb-mut);margin-bottom:2px}',
+    '.bot .kartu p{margin:4px 0 0;white-space:pre-line}',
+    '.bot .kartu button.tl{margin-top:6px;border:0;background:none;padding:0;color:var(--lb-acc);text-decoration:underline;font-size:13px}',
+    '.chip{display:flex;flex-wrap:wrap;gap:6px}',
+    '.chip button{border:1px solid var(--lb-line);background:var(--lb-bg);border-radius:999px;padding:5px 11px;font-size:13px}',
+    '.chip button:hover{border-color:var(--lb-acc);color:var(--lb-acc)}',
+    '.tanyabar{display:flex;gap:8px;position:sticky;bottom:-16px;background:var(--lb-bg);padding:8px 0 4px}',
+    '.tanyabar input{flex:1;min-width:0;border:1px solid var(--lb-line);border-radius:8px;background:var(--lb-bg);padding:8px 10px}',
     '.gform{display:block;width:100%;height:min(600px,62vh);min-height:360px;border:1px solid var(--lb-line);border-radius:8px;background:#fff}',
     'form{display:grid;gap:12px}',
     '.dua{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
@@ -131,14 +146,146 @@
   ]);
 
   /* Tab: Panduan alat */
+  var detailsEls = [];
   panelTab.panduan = h('div', null, PANDUAN.map(function (g, i) {
     var dl = h('dl');
     g[1].forEach(function (it) {
       dl.appendChild(h('dt', { text: it[0] }));
       dl.appendChild(h('dd', { text: it[1] }));
     });
-    return h('details', { open: i === 0 }, [h('summary', { text: g[0] }), dl]);
+    var dt = h('details', { open: i === 0 }, [h('summary', { text: g[0] }), dl]);
+    detailsEls[i] = dt;
+    return dt;
   }));
+
+  /* Tab: Tanya (pencarian di isi bantuan, bukan AI) */
+  var STOP = ('yang dan di ke dari untuk pada dengan atau itu ini saya aku kita anda bisa dapat apa bagaimana gimana ' +
+    'cara caranya kenapa mengapa kok dong deh nih ya tidak nggak ga enggak mau ingin ada sudah belum akan agar supaya ' +
+    'bagaimanakah apakah adalah sebuah suatu para lagi juga masih harus saja pakai dipakai menggunakan menggunakannya ' +
+    'tolong mohon minta cari tentang soal terkait jadi kalau jika bila bukan').split(' ');
+  var STOPSET = {}; STOP.forEach(function (w) { STOPSET[w] = 1; });
+  var VERBA = {};
+  ['buat', 'bikin', 'membuat', 'membikin', 'gambar', 'menggambar', 'tambah', 'menambah', 'tambahkan', 'pakai', 'gunakan', 'lakukan', 'melakukan', 'pasang', 'memasang', 'taruh', 'menaruh', 'atur', 'mengatur', 'caranya'].forEach(function (w) { VERBA[stem(w)] = 1; });
+  var SIN = [
+    ['hapus', 'menghapus', 'buang', 'delete', 'del', 'kosongkan'], ['simpan', 'save', 'menyimpan', 'backup'],
+    ['buka', 'open', 'membuka', 'muat', 'load'], ['ekspor', 'export', 'unduh', 'download', 'cetak', 'print', 'pdf'],
+    ['impor', 'import', 'masukkan', 'upload', 'unggah'], ['ulang', 'undo', 'batal', 'urungkan', 'redo'],
+    ['pintu', 'door'], ['jendela', 'window'], ['dinding', 'tembok'], ['lantai', 'level', 'tingkat'],
+    ['atap', 'roof'], ['tangga', 'stair'], ['rab', 'anggaran', 'biaya', 'harga'], ['ukuran', 'dimensi', 'ukur'],
+    ['pindah', 'geser', 'move'], ['salin', 'copy', 'duplikat', 'kopi'], ['putar', 'rotate', 'rotasi'],
+    ['error', 'rusak', 'macet', 'gagal', 'bug'], ['login', 'akun', 'gmail', 'google']].concat(SINONIM);
+  var SINMAP = {};
+  SIN.forEach(function (g, gi) { g.forEach(function (w) { (SINMAP[stem(w)] = SINMAP[stem(w)] || []).push(gi); }); });
+
+  function stem(w) {
+    w = String(w).toLowerCase();
+    if (w.length > 5) w = w.replace(/(kan|an|i|nya)$/, '');
+    if (w.length > 5) w = w.replace(/^(me|pe|di|ber|ter|se|ke)(ng|ny|n|m)?/, function (m, a, b) { return b && /^[aiueo]/.test(w.charAt(m.length)) ? '' : a === 'me' || a === 'pe' ? '' : ''; });
+    return w;
+  }
+  function tokens(t) {
+    return String(t).toLowerCase().replace(/[^a-z0-9À-ɏ]+/g, ' ').split(' ').filter(function (w) {
+      return w && !STOPSET[w] && (w.length > 1 || /\d/.test(w));
+    }).map(stem);
+  }
+
+  var DOKUMEN = [];
+  function tambahDoc(judul, teks, via, grup) {
+    var tj = tokens(judul + ' ' + via), tt = tokens(teks), tf = {}, n = 0;
+    tj.forEach(function (w) { tf[w] = (tf[w] || 0) + 3; n++; });
+    tt.forEach(function (w) { tf[w] = (tf[w] || 0) + 1; n++; });
+    DOKUMEN.push({ judul: judul, teks: teks, via: via, grup: grup, tf: tf, len: n || 1 });
+  }
+  LANGKAH.forEach(function (l, i) { tambahDoc(l[0], l[1], 'Mulai cepat, langkah ' + (i + 1), -1); });
+  PANDUAN.forEach(function (g, gi) { g[1].forEach(function (it) { tambahDoc(it[0], it[1], 'Panduan alat: ' + g[0], gi); }); });
+  PINTASAN.forEach(function (p) { tambahDoc(p[0], p[1], 'Pintasan', -2); });
+  FAQ.forEach(function (f) { tambahDoc(f[0], f[1], 'Tanya jawab', -1); });
+  MANUAL.forEach(function (m) {
+    var bag = String(m[0]).split(' \u203a '), ind = bag.length > 1 ? bag.pop() : bag[0], ortu = bag.length ? bag.join(' \u203a ') : '';
+    if (ortu.length > 46) ortu = ortu.slice(0, 44).replace(/\s+\S*$/, '') + '…';
+    tambahDoc(ind, m[1], 'Manual' + (ortu && ortu !== ind ? ': ' + ortu : ''), -3);
+  });
+  var DF = {};
+  DOKUMEN.forEach(function (d) { Object.keys(d.tf).forEach(function (w) { DF[w] = (DF[w] || 0) + 1; }); });
+  var AVG = DOKUMEN.reduce(function (a, d) { return a + d.len; }, 0) / (DOKUMEN.length || 1);
+
+  function idf(w) { return Math.log(1 + (DOKUMEN.length - (DF[w] || 0) + 0.5) / ((DF[w] || 0) + 0.5)); }
+
+  function cari(q) {
+    var qt = tokens(q), bobot = {};
+    var inti = qt.filter(function (w) { return !VERBA[w]; });
+    qt.forEach(function (w) {
+      if (VERBA[w] && inti.length) { bobot[w] = Math.max(bobot[w] || 0, 0.3); return; }
+      bobot[w] = Math.max(bobot[w] || 0, 1);
+      (SINMAP[w] || []).forEach(function (gi) {
+        SIN[gi].forEach(function (x) { x = stem(x); if (x !== w) bobot[x] = Math.max(bobot[x] || 0, 0.55); });
+      });
+    });
+    var kunci = Object.keys(bobot);
+    if (!kunci.length) return [];
+    var hasil = DOKUMEN.map(function (d) {
+      var skor = 0, cocok = 0;
+      kunci.forEach(function (w) {
+        var f = d.tf[w] || 0;
+        if (!f && w.length >= 5) {
+          for (var k in d.tf) { if (k.length >= 5 && (k.indexOf(w) === 0 || w.indexOf(k) === 0)) { f = d.tf[k] * 0.6; break; } }
+        }
+        if (f) { cocok += bobot[w] >= 1 ? 1 : (bobot[w] >= 0.55 ? 0.3 : 0); skor += bobot[w] * idf(w) * (f * 2.2) / (f + 1.2 * (0.25 + 0.75 * d.len / AVG)); }
+      });
+      var cov = Math.min(1, cocok / Math.max(1, inti.length || qt.length));
+      return { d: d, skor: skor * (0.25 + 0.75 * cov * cov) * (d.grup === -3 ? 1 : 1.2) };
+    }).filter(function (r) { return r.skor > 0; });
+    hasil.sort(function (a, b) { return b.skor - a.skor; });
+    return hasil;
+  }
+
+  var log = h('div', { class: 'log', 'aria-live': 'polite' });
+  var inputTanya = h('input', { type: 'text', maxlength: '200', autocomplete: 'off', 'aria-label': 'Pertanyaan Anda',
+    placeholder: 'Tulis pertanyaan, mis. "cara menambah tangga"' });
+  function pesanPengguna(t) { log.appendChild(h('div', { class: 'u', text: t })); }
+  function pesanBot(kids) { var n = h('div', { class: 'bot' }, kids); log.appendChild(n); return n; }
+  function gulir() { isi.scrollTop = isi.scrollHeight; }
+
+  function tanya(q) {
+    q = String(q || '').trim();
+    if (!q) return;
+    pesanUsulan.hidden = true;
+    pesanPengguna(q);
+    var hs = cari(q), top = hs.length ? hs[0].skor : 0;
+    var pilih = hs.filter(function (r, i) { return i < 3 && r.skor >= top * 0.55 && r.skor >= 0.9; });
+    if (!pilih.length) {
+      pesanBot([h('div', { class: 'kartu' }, [
+        h('b', { text: 'Belum ketemu jawabannya di panduan.' }),
+        h('p', { text: 'Coba pakai kata lain, mis. nama alat atau menu yang Anda maksud. Atau kirim pertanyaan Anda lewat tab Masukan.' }),
+        h('button', { type: 'button', class: 'tl', text: 'Buka tab Masukan', onclick: function () { pilihTab('masukan'); } })
+      ])]);
+    } else {
+      pesanBot(pilih.map(function (r) {
+        var d = r.d, teks = d.teks.length > 520 ? d.teks.slice(0, 520).replace(/\s+\S*$/, '') + '…' : d.teks;
+        var kids = [h('div', { class: 'via', text: d.via }), h('b', { text: d.judul }), h('p', { text: teks })];
+        if (d.grup >= 0 && detailsEls[d.grup]) {
+          kids.push(h('button', { type: 'button', class: 'tl', text: 'Lihat di Panduan alat', onclick: function () {
+            pilihTab('panduan'); detailsEls[d.grup].open = true; detailsEls[d.grup].scrollIntoView({ block: 'start' });
+          } }));
+        }
+        return h('div', { class: 'kartu' }, kids);
+      }));
+    }
+    gulir();
+  }
+
+  var usulan = LANGKAH.slice(0, 5).map(function (l) { return l[0]; });
+  var pesanUsulan = h('div', { class: 'chip' }, usulan.map(function (u) {
+    return h('button', { type: 'button', text: u, onclick: function () { tanya(u); } });
+  }));
+  panelTab.tanya = h('div', { class: 'chat' }, [
+    h('p', { class: 'mut', text: 'Tanyakan cara memakai ' + APP + '. Jawaban dicari dari panduan aplikasi ini, bukan dari AI, jadi isinya sama dengan yang tertulis di panduan.' }),
+    pesanUsulan,
+    log,
+    h('form', { class: 'tanyabar', novalidate: true, onsubmit: function (e) { e.preventDefault(); var v = inputTanya.value; inputTanya.value = ''; tanya(v); } }, [
+      inputTanya, h('button', { type: 'submit', class: 'btn utama', text: 'Tanya' })
+    ])
+  ]);
 
   /* Tab: Pintasan */
   panelTab.pintasan = h('div', null, [
@@ -281,6 +428,7 @@
     pilihTab(id || 'mulai');
     tirai.hidden = false;
     if (tabAktif === 'masukan' && !bingkai && !form.hidden) form.elements.pesan.focus();
+    else if (tabAktif === 'tanya') inputTanya.focus();
     else tombolTab[tabAktif].focus();
   }
 
