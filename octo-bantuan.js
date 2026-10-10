@@ -184,7 +184,7 @@
     return w;
   }
   function tokens(t) {
-    return String(t).toLowerCase().replace(/[^a-z0-9À-ɏ]+/g, ' ').split(' ').filter(function (w) {
+    return String(t).toLowerCase().replace(/[^a-z0-9\u00c0-\u024f]+/g, ' ').split(' ').filter(function (w) {
       return w && !STOPSET[w] && (w.length > 1 || /\d/.test(w));
     }).map(stem);
   }
@@ -202,7 +202,7 @@
   FAQ.forEach(function (f) { tambahDoc(f[0], f[1], 'Tanya jawab', -1); });
   MANUAL.forEach(function (m) {
     var bag = String(m[0]).split(' \u203a '), ind = bag.length > 1 ? bag.pop() : bag[0], ortu = bag.length ? bag.join(' \u203a ') : '';
-    if (ortu.length > 46) ortu = ortu.slice(0, 44).replace(/\s+\S*$/, '') + '…';
+    if (ortu.length > 46) ortu = ortu.slice(0, 44).replace(/\s+\S*$/, '') + '\u2026';
     tambahDoc(ind, m[1], 'Manual' + (ortu && ortu !== ind ? ': ' + ortu : ''), -3);
   });
   var DF = {};
@@ -261,7 +261,7 @@
       ])]);
     } else {
       pesanBot(pilih.map(function (r) {
-        var d = r.d, teks = d.teks.length > 520 ? d.teks.slice(0, 520).replace(/\s+\S*$/, '') + '…' : d.teks;
+        var d = r.d, teks = d.teks.length > 520 ? d.teks.slice(0, 520).replace(/\s+\S*$/, '') + '\u2026' : d.teks;
         var kids = [h('div', { class: 'via', text: d.via }), h('b', { text: d.judul }), h('p', { text: teks })];
         if (d.grup >= 0 && detailsEls[d.grup]) {
           kids.push(h('button', { type: 'button', class: 'tl', text: 'Lihat di Panduan alat', onclick: function () {
@@ -360,7 +360,7 @@
     onkeydown: tombolDialog }, [
     h('div', { class: 'kepala' }, [
       h('h2', { id: 'lb-judul', text: 'Bantuan ' + APP }),
-      h('button', { type: 'button', class: 'x', 'aria-label': 'Tutup', text: '×', onclick: tutup })
+      h('button', { type: 'button', class: 'x', 'aria-label': 'Tutup', text: '\u00d7', onclick: tutup })
     ]),
     tabs, isi
   ]);
@@ -485,7 +485,7 @@
 
     if (CONFIG.endpoint) {
       tombolKirim.disabled = true;
-      status('Mengirim…');
+      status('Mengirim\u2026');
       fetch(CONFIG.endpoint, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
